@@ -31,8 +31,6 @@ XPKG_REG_ORGS_NO_PROMOTE ?= xpkg.upbound.io/upbound
 XPKGS = $(PROJECT_NAME)
 -include build/makelib/xpkg.mk
 
-CROSSPLANE_NAMESPACE = upbound-system
-CROSSPLANE_ARGS = "--enable-environment-configs"
 -include build/makelib/local.xpkg.mk
 -include build/makelib/controlplane.mk
 
@@ -58,21 +56,3 @@ submodules:
 # We must ensure up is installed in tool cache prior to build as including the k8s_tools machinery prior to the xpkg
 # machinery sets UP to point to tool cache.
 build.init: $(UP)
-
-# ====================================================================================
-# End to End Testing
-
-# This target requires the following environment variables to be set:
-# - UPTEST_CLOUD_CREDENTIALS, cloud credentials for the provider being tested, e.g. export UPTEST_CLOUD_CREDENTIALS=$(cat ~/.aws/credentials)
-# - To ensure the proper functioning of the end-to-end test resource pre-deletion hook, it is crucial to arrange your resources appropriately. 
-#   You can check the basic implementation here: https://github.com/upbound/uptest/blob/main/internal/templates/01-delete.yaml.tmpl.
-uptest: $(UPTEST) $(KUBECTL) $(KUTTL)
-	@$(INFO) running automated tests
-	@KUBECTL=$(KUBECTL) KUTTL=$(KUTTL) $(UPTEST) e2e examples/app-claim.yaml,examples/mariadb-claim.yaml,examples/cluster-claim.yaml --setup-script=test/setup.sh --default-timeout=2400 || $(FAIL)
-	@$(OK) running automated tests
-
-# This target requires the following environment variables to be set:
-# - UPTEST_CLOUD_CREDENTIALS, cloud credentials for the provider being tested, e.g. export UPTEST_CLOUD_CREDENTIALS=$(cat ~/.aws/credentials)
-e2e: build controlplane.up local.xpkg.deploy.configuration.$(PROJECT_NAME) uptest
-
-.PHONY: uptest e2e

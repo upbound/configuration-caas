@@ -1,0 +1,43 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: xcontrolplanes.mcp.caas.upbound.io
+spec:
+  writeConnectionSecretsToNamespace: upbound-system
+  compositeTypeRef:
+    apiVersion: mcp.caas.upbound.io/v1alpha1
+    kind: XControlPlane
+  resources:
+    - base:
+        apiVersion: mcp.upbound.io/v1alpha1
+        kind: ControlPlane
+        spec:
+          # ToDo(haarchri): switch to observe-only
+          deletionPolicy: Orphan
+      patches:
+        - fromFieldPath: metadata.labels[crossplane.io/claim-name]
+          toFieldPath: metadata.annotations[crossplane.io/external-name]
+        - fromFieldPath: spec.parameters.organizationName
+          toFieldPath: spec.forProvider.organizationName
+        - fromFieldPath: spec.parameters.configuration
+          toFieldPath: spec.forProvider.configuration   
+      name: controlplane
+    - base:
+        apiVersion: mcp.upbound.io/v1alpha1
+        kind: ControlPlaneAuth
+      patches:
+        - fromFieldPath: metadata.labels[crossplane.io/claim-name]
+          toFieldPath: spec.forProvider.controlPlaneName
+        - fromFieldPath: spec.parameters.organizationName
+          toFieldPath: spec.forProvider.organizationName
+        - fromFieldPath: spec.writeConnectionSecretToRef.namespace
+          toFieldPath: spec.writeConnectionSecretToRef.namespace
+        - fromFieldPath: metadata.labels[crossplane.io/claim-name]
+          toFieldPath: spec.writeConnectionSecretToRef.name
+          transforms:
+            - type: string
+              string:
+                fmt: "mcp-controlplane-%s"
+      connectionDetails:
+        - fromConnectionSecretKey: kubeconfig
+      name: controlplane-auth

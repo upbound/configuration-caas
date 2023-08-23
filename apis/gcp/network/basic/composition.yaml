@@ -1,0 +1,68 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: xnetworks.gcp.caas.upbound.io
+  labels:
+    provider: GCP
+    type: basic
+spec:
+  writeConnectionSecretsToNamespace: upbound-system
+  compositeTypeRef:
+    apiVersion: gcp.caas.upbound.io/v1alpha1
+    kind: XNetwork
+  patchSets:
+    - name: providerConfigRef
+      patches:
+      - type: FromCompositeFieldPath
+        fromFieldPath: spec.parameters.providerConfigName
+        toFieldPath: spec.providerConfigRef.name
+    - name: deletionPolicy
+      patches:
+      - type: FromCompositeFieldPath
+        fromFieldPath: spec.parameters.deletionPolicy
+        toFieldPath: spec.deletionPolicy
+    - name: region
+      patches:
+      - type: FromCompositeFieldPath
+        fromFieldPath: spec.parameters.region
+        toFieldPath: spec.forProvider.region
+  resources:
+    - base:
+        apiVersion: compute.gcp.upbound.io/v1beta1
+        kind: Network
+        spec:
+          forProvider:
+            autoCreateSubnetworks: false
+            routingMode: REGIONAL
+      patches:
+        - type: PatchSet
+          patchSetName: providerConfigRef
+        - type: PatchSet
+          patchSetName: deletionPolicy
+        - fromFieldPath: spec.parameters.id
+          toFieldPath: metadata.name
+        - fromFieldPath: spec.parameters.id
+          toFieldPath: metadata.labels[networks.gcp.caas.upbound.io/network-id]
+    - base:
+        apiVersion: compute.gcp.upbound.io/v1beta1
+        kind: Subnetwork
+        spec:
+          forProvider:
+            networkSelector:
+              matchControllerRef: true
+            privateIpGoogleAccess: true
+            ipCidrRange: 172.16.0.0/16
+            secondaryIpRange:
+              - rangeName: pods
+                ipCidrRange: 10.200.0.0/14
+              - rangeName: services
+                ipCidrRange: 10.204.0.0/16
+      patches:
+        - type: PatchSet
+          patchSetName: providerConfigRef
+        - type: PatchSet
+          patchSetName: deletionPolicy
+        - type: PatchSet
+          patchSetName: region
+        - fromFieldPath: spec.parameters.id
+          toFieldPath: metadata.labels[networks.gcp.caas.upbound.io/network-id]

@@ -1,0 +1,40 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xcontrolplanes.mcp.caas.upbound.io
+spec:
+  group: mcp.caas.upbound.io
+  names:
+    kind: XControlPlane
+    plural: xcontrolplanes
+  claimNames:
+    kind: ControlPlane
+    plural: controlplanes
+  connectionSecretKeys:
+  - kubeconfig
+  versions:
+  - name: v1alpha1
+    served: true
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              parameters:
+                type: object
+                description: ControlPlane configuration parameters.
+                properties:
+                  organizationName:
+                    type: string
+                    description: OrganizationName is the name of the organization to which the control plane belongs
+                  configuration:
+                    type: string
+                    description: Configuration is the name of the predefined configuration.
+                required:
+                - organizationName
+                - configuration
+            required:
+            - parameters

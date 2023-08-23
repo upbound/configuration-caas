@@ -1,0 +1,15 @@
+apiVersion: gcp.caas.upbound.io/v1alpha1
+kind: Cluster
+metadata:
+  name: gcp-spoke-01
+  namespace: default
+spec:
+  parameters:
+    id: gcp-spoke-01
+    region: europe-west3
+    version: "latest"
+    nodes:
+      count: 3
+      size: small
+  writeConnectionSecretToRef:
+    name: gcp-spoke-01-kubeconfig

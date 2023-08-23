@@ -1,0 +1,49 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: xservices.gcp.caas.upbound.io
+  labels:
+    type: default
+spec:
+  writeConnectionSecretsToNamespace: upbound-system
+  compositeTypeRef:
+    apiVersion: gcp.caas.upbound.io/v1alpha1
+    kind: XServices
+  resources:
+    - name: releaseFlux
+      base:
+        apiVersion: helm.crossplane.io/v1beta1
+        kind: Release
+        spec:
+          rollbackLimit: 3
+          forProvider:
+            namespace: flux-system
+            chart:
+              name: flux2
+              url: https://github.com/fluxcd-community/helm-charts/releases/download/flux2-2.9.2/flux2-2.9.2.tgz
+              version: 2.9.2
+            values:
+              imageAutomationController:
+                create: false
+              imageReflectionController:
+                create: false
+      patches:
+        - fromFieldPath: metadata.labels
+          toFieldPath: metadata.labels
+        - fromFieldPath: metadata.annotations
+          toFieldPath: metadata.annotations
+        - fromFieldPath: spec.providerConfigRef.name
+          toFieldPath: spec.providerConfigRef.name
+        - fromFieldPath: spec.parameters.deletionPolicy
+          toFieldPath: spec.deletionPolicy
+        - fromFieldPath: spec.operators.flux.version
+          toFieldPath: spec.forProvider.chart.version
+        - type: CombineFromComposite
+          combine:
+            variables:
+            - fromFieldPath: spec.operators.flux.version
+            - fromFieldPath: spec.operators.flux.version
+            strategy: string
+            string:
+              fmt: https://github.com/fluxcd-community/helm-charts/releases/download/flux2-%s/flux2-%s.tgz
+          toFieldPath: spec.forProvider.chart.url

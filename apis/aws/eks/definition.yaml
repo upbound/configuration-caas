@@ -1,0 +1,90 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xeks.aws.caas.upbound.io
+spec:
+  connectionSecretKeys:
+  - kubeconfig
+  group: aws.caas.upbound.io
+  names:
+    kind: XEKS
+    plural: xeks
+  versions:
+  - name: v1alpha1
+    served: true
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              parameters:
+                type: object
+                description: EKS configuration parameters.
+                properties:
+                  id:
+                    type: string
+                    description: ID of this Cluster that other objects will use to refer to it.
+                  region:
+                    type: string
+                    description: Region is the region you'd like your resource to be created in.
+                  deletionPolicy:
+                    description: When the Composition is deleleted, delelete the AWS resources. Defaults to Delete
+                    enum:
+                    - Delete
+                    - Orphan
+                    type: string
+                    default: Delete
+                  providerConfigName:
+                    description: Crossplane ProviderConfig to use for provisioning this resources
+                    type: string
+                    default: default
+                  version:
+                    description: Kubernetes version 
+                    type: string
+                    enum:
+                    - "1.27"
+                    - "1.26"
+                    - "1.25"
+                    - "1.24"
+                    default: "1.27"
+                  subnetIds:
+                    type: array
+                    items:
+                      type: string
+                  nodes:
+                    type: object
+                    description: EKS node configuration parameters.
+                    properties:
+                      count:
+                        type: integer
+                        description: Desired node count, from 1 to 100.
+                      size:
+                        type: string
+                        description: Size of node.
+                        enum:
+                        - small
+                        - medium
+                        - large
+                    required:
+                    - count
+                    - size
+                required:
+                - id
+                - region
+                - deletionPolicy
+                - providerConfigName
+                - nodes
+                - subnetIds
+            required:
+            - parameters
+          status:
+            description: A Status represents the observed state
+            properties:
+              eks:
+                description: Freeform field containing status information for eks
+                type: object
+                x-kubernetes-preserve-unknown-fields: true
+            type: object

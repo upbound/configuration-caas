@@ -1,0 +1,22 @@
+# only one gitops master is supported between AWS,GCP,Azure
+apiVersion: aws.caas.upbound.io/v1alpha1
+kind: Cluster
+metadata:
+  name: gitops-master
+  namespace: default
+spec:
+  parameters:
+    id: gitops-master
+    region: eu-central-1
+    version: "1.27"
+    nodes:
+      count: 3
+      size: small
+    serviceSelector: gitops-master
+    gitops:
+      url: https://github.com/haarchri/caas-cluster-configuration
+      kubeConfigSecretRef:
+        name: mcp-cluster-as-code-kubeconfig
+        namespace: default
+  writeConnectionSecretToRef:
+    name: aws-gitops-master-kubeconfig

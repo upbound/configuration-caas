@@ -1,0 +1,15 @@
+apiVersion: azure.caas.upbound.io/v1alpha1
+kind: Cluster
+metadata:
+  name: azure-spoke-01
+  namespace: default
+spec:
+  parameters:
+    id: azure-spoke-01
+    region: West Europe
+    version: "1.27.3"
+    nodes:
+      count: 3
+      size: small
+  writeConnectionSecretToRef:
+    name: azure-spoke-01-kubeconfig

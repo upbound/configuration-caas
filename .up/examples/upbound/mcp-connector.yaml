@@ -1,0 +1,11 @@
+apiVersion: mcp.caas.upbound.io/v1alpha1
+kind: Connector
+metadata:
+  name: aws-spoke-01
+  namespace: default
+spec:
+  parameters:
+    organizationName: upbound
+    controlPlaneName: caas
+    version: "0.3.2"
+    providerConfigName: aws-spoke-01

@@ -116,55 +116,6 @@ spec:
             loggingService: logging.googleapis.com/kubernetes
             monitoringService: monitoring.googleapis.com/kubernetes
             initialNodeCount: 1
-            # ToDo(haarchri): check issue https://github.com/upbound/provider-gcp/issues/355#issuecomment-1673022397
-            loggingConfig:
-              - enableComponents:
-                - SYSTEM_COMPONENTS
-                - WORKLOADS
-            monitoringConfig:
-            - enableComponents:
-              - SYSTEM_COMPONENTS
-              managedPrometheus:
-              - enabled: true
-            masterAuth:
-              - clientCertificateConfig:
-                  - issueClientCertificate: false
-            addonsConfig:
-              - dnsCacheConfig:
-                  - enabled: true
-                gcePersistentDiskCsiDriverConfig:
-                  - enabled: true
-                gcpFilestoreCsiDriverConfig:
-                  - enabled: true
-            binaryAuthorization:
-              - enabled: false
-            clusterAutoscaling:
-              - autoProvisioningDefaults:
-                enabled: true
-            defaultSnatStatus:
-              - disabled: false
-            ipAllocationPolicy:
-              - podCidrOverprovisionConfig:
-                  - disabled: false
-            monitoringConfig:
-              - managedPrometheus:
-                  - enabled: true
-            networkPolicy:
-              - enabled: false
-            notificationConfig:
-              - pubsub:
-                  - enabled: false
-                    topic: ''
-            privateClusterConfig:
-              - enablePrivateEndpoint: false
-                enablePrivateNodes: false
-                masterGlobalAccessConfig:
-                  - enabled: false
-            serviceExternalIpsConfig:
-              - enabled: false
-            verticalPodAutoscaling:
-              - enabled: true
-            # ToDo(haarchri): check issue https://github.com/upbound/provider-gcp/issues/355#issuecomment-1673022397
       patches:
         - type: PatchSet
           patchSetName: providerConfigRef
@@ -190,59 +141,59 @@ spec:
             fromFieldPath: Required
       connectionDetails:
         - fromConnectionSecretKey: kubeconfig
-    # - name: node-pool
-    #   base:
-    #     apiVersion: container.gcp.upbound.io/v1beta1
-    #     kind: NodePool
-    #     spec:
-    #       forProvider:
-    #         initialNodeCount: 1
-    #         clusterSelector:
-    #           matchControllerRef: true
-    #         autoscaling:
-    #           - minNodeCount: 1
-    #             maxNodeCount: 1
-    #         nodeConfig:
-    #           - diskSizeGb: 10
-    #             imageType: COS_CONTAINERD
-    #             machineType: e2-medium
-    #             preemptible: true
-    #             shieldedInstanceConfig:
-    #               - enableIntegrityMonitoring: true
-    #                 enableSecureBoot: true
-    #             metadata:
-    #               disable-legacy-endpoints: "true"
-    #             oauthScopes:
-    #               - https://www.googleapis.com/auth/cloud-platform
-    #         management:
-    #           - autoRepair: true
-    #             autoUpgrade: true
-    #         maxPodsPerNode: 55
-    #   patches:
-    #     - type: PatchSet
-    #       patchSetName: providerConfigRef
-    #     - type: PatchSet
-    #       patchSetName: deletionPolicy
-    #     - type: PatchSet
-    #       patchSetName: region
-    #     - fromFieldPath: spec.parameters.nodes.size
-    #       toFieldPath: spec.forProvider.nodeConfig[0].machineType
-    #       transforms:
-    #         - type: map
-    #           map:
-    #             small: n1-standard-4
-    #             medium: n1-standard-16
-    #             large: n1-standard-32
-    #     - fromFieldPath: spec.parameters.nodes.count
-    #       toFieldPath: spec.forProvider.initialNodeCount
-    #     - fromFieldPath: spec.parameters.nodes.count
-    #       toFieldPath: spec.forProvider.autoscaling[0].minNodeCount
-    #     - fromFieldPath: spec.parameters.nodes.count
-    #       toFieldPath: spec.forProvider.autoscaling[0].maxNodeCount
-    #     - fromFieldPath: status.gke.serviceAccount
-    #       toFieldPath: spec.forProvider.nodeConfig[0].serviceAccount
-    #       policy:
-    #         fromFieldPath: Required
+    - name: node-pool
+      base:
+        apiVersion: container.gcp.upbound.io/v1beta1
+        kind: NodePool
+        spec:
+          forProvider:
+            initialNodeCount: 1
+            clusterSelector:
+              matchControllerRef: true
+            autoscaling:
+              - minNodeCount: 1
+                maxNodeCount: 1
+            nodeConfig:
+              - diskSizeGb: 10
+                imageType: COS_CONTAINERD
+                machineType: e2-medium
+                preemptible: true
+                shieldedInstanceConfig:
+                  - enableIntegrityMonitoring: true
+                    enableSecureBoot: true
+                metadata:
+                  disable-legacy-endpoints: "true"
+                oauthScopes:
+                  - https://www.googleapis.com/auth/cloud-platform
+            management:
+              - autoRepair: true
+                autoUpgrade: true
+            maxPodsPerNode: 55
+      patches:
+        - type: PatchSet
+          patchSetName: providerConfigRef
+        - type: PatchSet
+          patchSetName: deletionPolicy
+        - type: PatchSet
+          patchSetName: region
+        - fromFieldPath: spec.parameters.nodes.size
+          toFieldPath: spec.forProvider.nodeConfig[0].machineType
+          transforms:
+            - type: map
+              map:
+                small: n1-standard-4
+                medium: n1-standard-16
+                large: n1-standard-32
+        - fromFieldPath: spec.parameters.nodes.count
+          toFieldPath: spec.forProvider.initialNodeCount
+        - fromFieldPath: spec.parameters.nodes.count
+          toFieldPath: spec.forProvider.autoscaling[0].minNodeCount
+        - fromFieldPath: spec.parameters.nodes.count
+          toFieldPath: spec.forProvider.autoscaling[0].maxNodeCount
+        - fromFieldPath: status.gke.serviceAccount
+          toFieldPath: spec.forProvider.nodeConfig[0].serviceAccount
+          policy:
+            fromFieldPath: Required
     - name: providerConfig-helm
       base:
         apiVersion: helm.crossplane.io/v1beta1

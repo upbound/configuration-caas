@@ -1,0 +1,160 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: xconnectors.mcp.caas.upbound.io
+spec:
+  writeConnectionSecretsToNamespace: upbound-system
+  compositeTypeRef:
+    apiVersion: mcp.caas.upbound.io/v1alpha1
+    kind: XConnector
+  resources:
+    - name: mcp-serviceaccount
+      base:
+        apiVersion: iam.upbound.io/v1alpha1
+        kind: Robot
+      patches:
+        - fromFieldPath: spec.parameters.deletionPolicy
+          toFieldPath: spec.deletionPolicy
+        - fromFieldPath: spec.parameters.organizationName
+          toFieldPath: spec.forProvider.owner.name
+        - fromFieldPath: metadata.labels[crossplane.io/claim-name]
+          toFieldPath: spec.forProvider.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-mcp-connector"
+        - fromFieldPath: metadata.labels[crossplane.io/claim-name]
+          toFieldPath: spec.forProvider.description
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-mcp-connector"
+    - name: mcp-token
+      base:
+        apiVersion: iam.upbound.io/v1alpha1
+        kind: Token
+        spec:
+          forProvider:
+            owner:
+              type: robots
+              idSelector:
+                matchControllerRef: true
+          writeConnectionSecretToRef:
+            namespace: upbound-system
+      patches:
+        - fromFieldPath: spec.parameters.deletionPolicy
+          toFieldPath: spec.deletionPolicy
+        - fromFieldPath: metadata.labels[crossplane.io/claim-name]
+          toFieldPath: spec.forProvider.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-mcp-connector-access-token"
+        - fromFieldPath: metadata.labels[crossplane.io/claim-name]
+          toFieldPath: spec.writeConnectionSecretToRef.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-mcp-connector"
+    - name: mcp-team
+      base:
+        apiVersion: iam.upbound.io/v1alpha1
+        kind: Team
+      patches:
+        - fromFieldPath: spec.parameters.deletionPolicy
+          toFieldPath: spec.deletionPolicy
+        - fromFieldPath: spec.parameters.organizationName
+          toFieldPath: spec.forProvider.organizationName
+        - fromFieldPath: metadata.labels[crossplane.io/claim-name]
+          toFieldPath: spec.forProvider.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-mcp-connector"
+    - name: mcp-team-membership
+      base:
+        apiVersion: iam.upbound.io/v1alpha1
+        kind: RobotTeamMembership
+        spec:
+          forProvider:
+            robotIdSelector:
+              matchControllerRef: true
+            teamIdSelector:
+              matchControllerRef: true
+      patches:
+        - fromFieldPath: spec.parameters.deletionPolicy
+          toFieldPath: spec.deletionPolicy
+    - name: mcp-controlplane-permission
+      base:
+        apiVersion: mcp.upbound.io/v1alpha1
+        kind: ControlPlanePermission
+        spec:
+          forProvider:
+            teamIdSelector:
+              matchControllerRef: true
+            permission: owner
+      patches:
+        - fromFieldPath: spec.parameters.deletionPolicy
+          toFieldPath: spec.deletionPolicy
+        - fromFieldPath: spec.parameters.organizationName
+          toFieldPath: spec.forProvider.organizationName
+        - fromFieldPath: spec.parameters.controlPlaneName
+          toFieldPath: spec.forProvider.controlPlaneName
+    - name: mcp-connector
+      base:
+        apiVersion: helm.crossplane.io/v1beta1
+        kind: Release
+        spec:
+          forProvider:
+            namespace: kube-system
+            chart:
+              name: mcp-connector
+              url: https://charts.upbound.io/beta/mcp-connector-0.3.2.tgz
+              version: 0.3.2
+            values:
+              mcp:
+                host: https://proxy.upbound.io
+            set:
+              - name: mcp.token
+                valueFrom:
+                  secretKeyRef:
+                    key: token
+                    namespace: upbound-system
+                    optional: false
+      patches:
+        - fromFieldPath: metadata.labels
+          toFieldPath: metadata.labels
+        - fromFieldPath: metadata.annotations
+          toFieldPath: metadata.annotations
+        - fromFieldPath: spec.parameters.providerConfigName
+          toFieldPath: spec.providerConfigRef.name
+        - fromFieldPath: spec.parameters.deletionPolicy
+          toFieldPath: spec.deletionPolicy
+        - fromFieldPath: spec.parameters.organizationName
+          toFieldPath: spec.forProvider.values.mcp.account
+        - fromFieldPath: metadata.labels[crossplane.io/claim-name]
+          toFieldPath: spec.forProvider.set[0].valueFrom.secretKeyRef.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-mcp-connector"
+        - fromFieldPath: spec.parameters.controlPlaneName
+          toFieldPath: spec.forProvider.values.mcp.name
+        - fromFieldPath: metadata.labels[crossplane.io/claim-name]
+          toFieldPath: spec.forProvider.values.mcp.namespace
+        - fromFieldPath: spec.parameters.version
+          toFieldPath: spec.forProvider.chart.version
+        - type: CombineFromComposite
+          combine:
+            variables:
+            - fromFieldPath: spec.parameters.version
+            strategy: string
+            string:
+              fmt: https://charts.upbound.io/beta/mcp-connector-%s.tgz
+          toFieldPath: spec.forProvider.chart.url
+        - fromFieldPath: spec.parameters.version
+          toFieldPath: spec.forProvider.values.image.tag
+          transforms:
+            - type: string
+              string:
+                fmt: "v%s"

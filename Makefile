@@ -23,6 +23,7 @@ UPTEST_VERSION = v0.2.1
 # certain conventions such as the default examples root or package directory.
 XPKG_DIR = $(shell pwd)
 XPKG_EXAMPLES_DIR = .up/examples
+XPKG_IGNORE = .github/workflows/ci.yaml,.github/workflows/tag.yml
 
 XPKG_REG_ORGS ?= xpkg.upbound.io/upbound
 # NOTE(hasheddan): skip promoting on xpkg.upbound.io as channel tags are

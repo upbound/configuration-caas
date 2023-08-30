@@ -13,8 +13,8 @@ PLATFORMS ?= linux_amd64
 
 UP_VERSION = v0.18.0
 UP_CHANNEL = stable
-UPTEST_VERSION = v0.2.1
-
+UPTEST_VERSION = v0.5.0
+UPTEST_CLAIMS = .up/examples/aws/spoke-cluster.yaml,.up/examples/azure/spoke-cluster.yaml,.up/examples/gcp/spoke-cluster.yaml
 -include build/makelib/k8s_tools.mk
 # ====================================================================================
 # Setup XPKG
@@ -23,7 +23,7 @@ UPTEST_VERSION = v0.2.1
 # certain conventions such as the default examples root or package directory.
 XPKG_DIR = $(shell pwd)
 XPKG_EXAMPLES_DIR = .up/examples
-XPKG_IGNORE = .github/workflows/ci.yaml,.github/workflows/tag.yml
+XPKG_IGNORE = .github/workflows/ci.yaml,.github/workflows/tag.yml,.github/workflows/e2e.yaml,test/setup.sh
 
 XPKG_REG_ORGS ?= xpkg.upbound.io/upbound
 # NOTE(hasheddan): skip promoting on xpkg.upbound.io as channel tags are
@@ -32,6 +32,7 @@ XPKG_REG_ORGS_NO_PROMOTE ?= xpkg.upbound.io/upbound
 XPKGS = $(PROJECT_NAME)
 -include build/makelib/xpkg.mk
 
+CROSSPLANE_NAMESPACE = upbound-system
 -include build/makelib/local.xpkg.mk
 -include build/makelib/controlplane.mk
 
@@ -57,3 +58,21 @@ submodules:
 # We must ensure up is installed in tool cache prior to build as including the k8s_tools machinery prior to the xpkg
 # machinery sets UP to point to tool cache.
 build.init: $(UP)
+
+# ====================================================================================
+# End to End Testing
+
+# This target requires the following environment variables to be set:
+# - UPTEST_CLOUD_CREDENTIALS, cloud credentials for the provider being tested, e.g. export UPTEST_CLOUD_CREDENTIALS=$(cat ~/.aws/credentials)
+# - To ensure the proper functioning of the end-to-end test resource pre-deletion hook, it is crucial to arrange your resources appropriately. 
+#   You can check the basic implementation here: https://github.com/upbound/uptest/blob/main/internal/templates/01-delete.yaml.tmpl.
+uptest: $(UPTEST) $(KUBECTL) $(KUTTL)
+	@$(INFO) running automated tests
+	@KUBECTL=$(KUBECTL) KUTTL=$(KUTTL) $(UPTEST) e2e $(UPTEST_CLAIMS) --setup-script=test/setup.sh --default-timeout=4800 || $(FAIL)
+	@$(OK) running automated tests
+
+# This target requires the following environment variables to be set:
+# - UPTEST_CLOUD_CREDENTIALS, cloud credentials for the provider being tested, e.g. export UPTEST_CLOUD_CREDENTIALS=$(cat ~/.aws/credentials)
+e2e: build controlplane.up local.xpkg.deploy.configuration.$(PROJECT_NAME) uptest
+
+.PHONY: uptest e2e

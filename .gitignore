@@ -1,1 +1,9 @@
 init
+/.cache
+/.work
+/_output
+/results
+/.idea
+
+*.xpkg
+kubeconfig

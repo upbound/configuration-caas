@@ -29,17 +29,15 @@ spec:
       version: ">=v0.38.0"
     - provider: xpkg.upbound.io/upbound/provider-upbound
       version: ">=v0.2.0"
-    - provider: xpkg.upbound.io/upbound/provider-family-azure
-      version: ">=v0.35.0"
     - provider: xpkg.upbound.io/upbound/provider-azure-containerservice
-      version: ">=v0.35.0"
+      version: ">=v0.36.0"
     - provider: xpkg.upbound.io/upbound/provider-azure-network
-      version: ">=v0.35.0"
+      version: ">=v0.36.0"
     - provider: xpkg.upbound.io/upbound/provider-gcp-cloudplatform
-      version: ">=v0.35.1"
+      version: ">=v0.36.0"
     - provider: xpkg.upbound.io/upbound/provider-gcp-compute
-      version: ">=v0.35.1"
+      version: ">=v0.36.0"
     - provider: xpkg.upbound.io/upbound/provider-gcp-container
-      version: ">=v0.35.1"
+      version: ">=v0.36.0"
     - provider: xpkg.upbound.io/upbound/provider-gcp-servicenetworking
-      version: ">=v0.35.1"
+      version: ">=v0.36.0"

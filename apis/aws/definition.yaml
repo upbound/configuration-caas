@@ -47,7 +47,7 @@ spec:
                     - gitops-master
                     default: default
                   deletionPolicy:
-                    description: When the Composition is deleleted, delelete the AWS resources. Defaults to Delete
+                    description: When the Composition is deleted, delete the AWS resources. Defaults to Delete
                     enum:
                     - Delete
                     - Orphan

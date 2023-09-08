@@ -49,7 +49,7 @@ spec:
                     - gitops-master
                     default: default
                   deletionPolicy:
-                    description: When the Composition is deleleted, delelete the GCP resources. Defaults to Delete
+                    description: When the Composition is deleted, delete the GCP resources. Defaults to Delete
                     enum:
                     - Delete
                     - Orphan

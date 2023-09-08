@@ -28,7 +28,7 @@ spec:
                       type: string
                       description: Region is the region you'd like your resource to be created in.
                     deletionPolicy:
-                      description: When the Composition is deleleted, delelete the Azure resources. Defaults to Delete
+                      description: When the Composition is deleted, delete the Azure resources. Defaults to Delete
                       enum:
                       - Delete
                       - Orphan

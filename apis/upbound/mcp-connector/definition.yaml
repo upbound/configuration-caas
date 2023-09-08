@@ -26,7 +26,7 @@ spec:
                 description: Connector configuration parameters.
                 properties:
                   deletionPolicy:
-                    description: When the Composition is deleleted, delelete the Upbound resources. Defaults to Delete
+                    description: When the Composition is deleted, delete the Upbound resources. Defaults to Delete
                     enum:
                     - Delete
                     - Orphan

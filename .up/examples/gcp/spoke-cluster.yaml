@@ -1,15 +1,17 @@
 apiVersion: gcp.caas.upbound.io/v1alpha1
 kind: Cluster
 metadata:
-  name: gcp-spoke-01
+  name: gcp-spoke-02
   namespace: default
+  annotations:
+    uptest.upbound.io/pre-delete-hook: ../testhooks/gcp-release-delete.sh
 spec:
   parameters:
-    id: gcp-spoke-01
-    region: europe-west3
+    id: gcp-spoke-02
+    region: us-west2
     version: "latest"
     nodes:
       count: 3
       size: small
   writeConnectionSecretToRef:
-    name: gcp-spoke-01-kubeconfig
+    name: gcp-spoke-02-kubeconfig

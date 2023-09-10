@@ -3,6 +3,8 @@ kind: Cluster
 metadata:
   name: aws-spoke-01
   namespace: default
+  annotations:
+    uptest.upbound.io/pre-delete-hook: ../testhooks/aws-release-delete.sh
 spec:
   parameters:
     id: aws-spoke-01

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -aeuo pipefail
 
-UPTEST_GCP_PROJECT=${UPTEST_GCP_PROJECT:-crossplane-playground}
+UPTEST_GCP_PROJECT=${UPTEST_GCP_PROJECT:-official-provider-testing}
 
 echo "Running setup.sh"
 echo "Waiting until configuration package is installed..."

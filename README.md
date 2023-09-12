@@ -39,7 +39,7 @@ Each API in the [`apis`](https://github.com/upbound/configuration-caas/tree/main
     
 ## Deployment
 
-To deploy CaaS in a new organization, follow the Get Started guide.
+To deploy CaaS in a new organization, follow the [Get Started guide](https://docs.upbound.io/quickstart/multicloud-deploy/).
 
 For deployments to an existing organization, log in to your Upbound organization
 and go to **Configurations** and click **Create Configuration**.

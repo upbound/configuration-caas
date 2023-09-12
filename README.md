@@ -1,9 +1,12 @@
 # Cluster-as-a-Service base configuration
 
-Upbound's Cluster-as-a-Service (CaaS) solution is a managed control plane architecture
-framework available in the Upbound console for quick deployment. This configuration base template allows teams to spin up a fully functional
-managed control plane in any cloud provider and is extendable so it can scale
-with your organization.
+This repo provides a configuration for a Cluster-as-a-Service, built on top of
+Crossplane. This configuration exposes a simple API to your internal developers
+for creating Kubernetes clusters. In the background, this configuration can create clusters in AWS, Azure, and GCP. It automatically applies common recommended practices, such as connecting the cluster to existing Flux deployments, automating VPC setup, and creating a Flux operator in a cluster.
+
+This repo is a starting point for you to deliver your own
+Cluster-as-a-Service. Fork this repository and customize the configuration to
+meet your teams' needs.
 
 To deploy a multicloud CaaS control plane in your organization, check out the
 [Multicloud Quickstart](https://docs.upbound.io/quickstart/multicloud-deploy/).

@@ -8,10 +8,10 @@ This repo is a starting point for you to deliver your own
 Cluster-as-a-Service. Fork this repository and customize the configuration to
 meet your teams' needs.
 
-To deploy a multicloud CaaS control plane in your organization, check out the
+To deploy a multicloud Cluster-as-a-Service control plane in your organization, check out the
 [Multicloud Quickstart](https://docs.upbound.io/quickstart/multicloud-deploy/).
 
-Advantages of CaaS:
+Advantages of Cluster-as-a-Service:
 
 - GitOps workflow
 - Production-ready template
@@ -20,7 +20,7 @@ Advantages of CaaS:
 
 ## Available APIs
 
-This repository uses Compositions for AWS, Azure, and GCP provider APIs, as well as the Upbound Control Plane provider. For more information, review the provider Configurations below:
+This repository implements Compositions for AWS, Azure, and GCP provider APIs, as well as the Upbound Control Plane provider. For more information, review the API documentation below:
 
 - [`Cluster.aws.caas.upbound.io`](https://marketplace.upbound.io/configurations/upbound/configuration-caas/v0.1.0/resources/aws.caas.upbound.io/XCluster/v1alpha1) 
     - Provision/Manage an EKS Cluster
@@ -38,11 +38,15 @@ This repository uses Compositions for AWS, Azure, and GCP provider APIs, as well
 - [`Connector.mcp.caas.upbound.io`](https://marketplace.upbound.io/configurations/upbound/configuration-caas/v0.1.0/resources/mcp.caas.upbound.io/XCluster/v1alpha1)
     - Provision/Manage an MCP Connector
 
-Each API in the [`apis`](https://github.com/upbound/configuration-caas/tree/main/apis) folder contains compositions and definitions for each cloud provider. Once you clone the CaaS repository, you can modify these compositions to fit your organizations needs. 
+The [`apis`](https://github.com/upbound/configuration-caas/tree/main/apis)
+folder has the CompositeResourceDefinitons (XRDs) that define the schemas for
+the cloud provider APIs. 
+
+Once you clone the repository, you can modify the included compositions to fit your organizations needs. 
     
 ## Deployment
 
-To deploy CaaS in a new organization, follow the [Get Started guide](https://docs.upbound.io/quickstart/multicloud-deploy/).
+To deploy in a new organization, follow the [Get Started guide](https://docs.upbound.io/quickstart/multicloud-deploy/).
 
 For deployments to an existing organization, log in to your Upbound organization
 and go to **Configurations** and click **Create Configuration**.
@@ -64,14 +68,11 @@ available cloud resources.
 
 ## GitOps integration
 
-CaaS deployments work best when managed in your infrastructure as code
+Cluster-as-a-Service deployments work best when managed in your infrastructure as code
 lifecycle. 
 
 For more information on how to integrate Argo CD and Flux in your Upbound
-environment, check out the [GitOps with Control Planes doc](https://docs.upbound.io/quickstart/multicloud-deploy/#configure-provider-upbound).
-
-The Upbound Marketplace hosts a [community-owned Argo CD provider](https://github.com/crossplane-contrib/provider-argocd) to manage and
-create Argo CD resources with Crossplane.
+environment, check out the [GitOps with Control Planes doc](https://docs.upbound.io/concepts/mcp/control-plane-connector/).
 
 ## Contributing
 

@@ -41,8 +41,7 @@ spec:
             enableDnsSupport: true
             enableDnsHostnames: true
             tags:
-              Owner: Platform Team
-              Name: caas-vpc
+              Name: ""
       name: caas-vcp
       patches:
         - type: PatchSet
@@ -53,6 +52,8 @@ spec:
           patchSetName: network-id
         - type: PatchSet
           patchSetName: region
+        - fromFieldPath: metadata.name
+          toFieldPath: spec.forProvider.tags["Name"]
     - base:
         apiVersion: ec2.aws.upbound.io/v1beta1
         kind: InternetGateway

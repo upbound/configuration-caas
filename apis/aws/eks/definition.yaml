@@ -30,6 +30,18 @@ spec:
                   region:
                     type: string
                     description: Region is the region you'd like your resource to be created in.
+                  iam:
+                    type: object
+                    description: IAM configuration to connect as ClusterAdmin.
+                    properties:
+                      roleArn:
+                        description: The IAM Role ARN to connect as ClusterAdmin.
+                        type: string
+                        default: roleArn
+                      userArn:
+                        description: The IAM User ARN to connect as ClusterAdmin.
+                        type: string
+                        default: userArn
                   deletionPolicy:
                     description: When the Composition is deleted, delete the AWS resources. Defaults to Delete
                     enum:
@@ -61,16 +73,13 @@ spec:
                       count:
                         type: integer
                         description: Desired node count, from 1 to 100.
-                      size:
+                      instanceType:
                         type: string
-                        description: Size of node.
-                        enum:
-                        - small
-                        - medium
-                        - large
+                        description: instance types associated with the Node Group.
+                        default: t3.small
                     required:
                     - count
-                    - size
+                    - instanceType
                 required:
                 - id
                 - region

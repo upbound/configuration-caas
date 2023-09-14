@@ -9,6 +9,21 @@ spec:
   compositeTypeRef:
     apiVersion: gcp.caas.upbound.io/v1alpha1
     kind: XServices
+  patchSets:
+  - name: Common
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.labels
+      toFieldPath: metadata.labels
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.annotations
+      toFieldPath: metadata.annotations
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.providerConfigRef.name
+      toFieldPath: spec.providerConfigRef.name
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.deletionPolicy
+      toFieldPath: spec.deletionPolicy
   resources:
     - name: releaseFlux
       base:
@@ -28,14 +43,8 @@ spec:
               imageReflectionController:
                 create: false
       patches:
-        - fromFieldPath: metadata.labels
-          toFieldPath: metadata.labels
-        - fromFieldPath: metadata.annotations
-          toFieldPath: metadata.annotations
-        - fromFieldPath: spec.providerConfigRef.name
-          toFieldPath: spec.providerConfigRef.name
-        - fromFieldPath: spec.parameters.deletionPolicy
-          toFieldPath: spec.deletionPolicy
+        - type: PatchSet
+          patchSetName: Common
         - fromFieldPath: spec.operators.flux.version
           toFieldPath: spec.forProvider.chart.version
         - type: CombineFromComposite
@@ -65,14 +74,8 @@ spec:
               metadata:
                 namespace: flux-system
       patches:
-        - fromFieldPath: metadata.labels
-          toFieldPath: metadata.labels
-        - fromFieldPath: metadata.annotations
-          toFieldPath: metadata.annotations
-        - fromFieldPath: spec.providerConfigRef.name
-          toFieldPath: spec.providerConfigRef.name
-        - fromFieldPath: spec.parameters.deletionPolicy
-          toFieldPath: spec.deletionPolicy
+        - type: PatchSet
+          patchSetName: Common
         - fromFieldPath: spec.gitops.kubeConfigSecretRef.name
           toFieldPath: spec.references[0].patchesFrom.name
         - fromFieldPath: spec.gitops.kubeConfigSecretRef.namespace
@@ -110,14 +113,8 @@ spec:
                     secretRef:
                       key: kubeconfig
       patches:
-        - fromFieldPath: metadata.labels
-          toFieldPath: metadata.labels
-        - fromFieldPath: metadata.annotations
-          toFieldPath: metadata.annotations
-        - fromFieldPath: spec.providerConfigRef.name
-          toFieldPath: spec.providerConfigRef.name
-        - fromFieldPath: spec.parameters.deletionPolicy
-          toFieldPath: spec.deletionPolicy
+        - type: PatchSet
+          patchSetName: Common
         - fromFieldPath: spec.providerConfigRef.name
           toFieldPath: metadata.annotations[crossplane.io/external-name]
         - fromFieldPath: spec.gitops.url

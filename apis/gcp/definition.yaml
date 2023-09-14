@@ -70,16 +70,13 @@ spec:
                       count:
                         type: integer
                         description: Desired node count, from 1 to 100.
-                      size:
+                      instanceType:
                         type: string
-                        description: Size of node.
-                        enum:
-                        - small
-                        - medium
-                        - large
+                        description: instance types associated with the Node Group.
+                        default: n1-standard-4
                     required:
                     - count
-                    - size
+                    - instanceType
                   gitops:
                     type: object
                     description: GitOps configure external gitops system for mcp controlplane
@@ -87,6 +84,9 @@ spec:
                       url:
                         type: string
                         description: Url for GitOps Sync.
+                      path:
+                        type: string
+                        description: path in Repo for GitOps Sync.
                       kubeConfigSecretRef:
                         type: object
                         description: location for kubeconfig mcp controlplane
@@ -101,7 +101,6 @@ spec:
                         - name
                         - namespace
                     required:
-                    - kubeConfigSecretRef
                     - url
                   services:
                     type: object

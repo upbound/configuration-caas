@@ -50,8 +50,8 @@ spec:
           toFieldPath: spec.parameters.version
         - fromFieldPath: spec.parameters.nodes.count
           toFieldPath: spec.parameters.nodes.count
-        - fromFieldPath: spec.parameters.nodes.size
-          toFieldPath: spec.parameters.nodes.size
+        - fromFieldPath: spec.parameters.nodes.instanceType
+          toFieldPath: spec.parameters.nodes.instanceType
     - base:
         apiVersion: gcp.caas.upbound.io/v1alpha1
         kind: XServices
@@ -64,6 +64,8 @@ spec:
           toFieldPath: spec.operators.flux.version
         - fromFieldPath: spec.parameters.gitops.url
           toFieldPath: spec.gitops.url
+        - fromFieldPath: spec.parameters.gitops.path
+          toFieldPath: spec.gitops.path
         - fromFieldPath: spec.parameters.gitops.kubeConfigSecretRef.name
           toFieldPath: spec.gitops.kubeConfigSecretRef.name
         - fromFieldPath: spec.parameters.gitops.kubeConfigSecretRef.namespace

@@ -32,6 +32,9 @@ spec:
                   url:
                     type: string
                     description: Url for GitOps Sync.
+                  path:
+                    type: string
+                    description: path in Repo for GitOps Sync.
                   kubeConfigSecretRef:
                     type: object
                     description: location for kubeconfig mcp controlplane
@@ -46,7 +49,6 @@ spec:
                     - name
                     - namespace
                 required:
-                - kubeConfigSecretRef
                 - url
               operators:
                 type: object

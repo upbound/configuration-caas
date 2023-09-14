@@ -33,6 +33,16 @@ spec:
                   region:
                     type: string
                     description: Region is the region you'd like your resource to be created in.
+                  iam:
+                    type: object
+                    description: IAM configuration to connect as ClusterAdmin.
+                    properties:
+                      roleArn:
+                        description: The IAM Role ARN to connect as ClusterAdmin.
+                        type: string
+                      userArn:
+                        description: The IAM User ARN to connect as ClusterAdmin.
+                        type: string
                   networkSelector:
                     type: string
                     description: NetworkSelector employs a specific type of network architecture.
@@ -73,16 +83,13 @@ spec:
                       count:
                         type: integer
                         description: Desired node count, from 1 to 100.
-                      size:
+                      instanceType:
                         type: string
-                        description: Size of node.
-                        enum:
-                        - small
-                        - medium
-                        - large
+                        description: instance types associated with the Node Group.
+                        default: t3.small
                     required:
                     - count
-                    - size
+                    - instanceType
                   gitops:
                     type: object
                     description: GitOps configure external gitops system for mcp controlplane
@@ -90,6 +97,9 @@ spec:
                       url:
                         type: string
                         description: Url for GitOps Sync.
+                      path:
+                        type: string
+                        description: path in Repo for GitOps Sync.
                       kubeConfigSecretRef:
                         type: object
                         description: location for kubeconfig mcp controlplane
@@ -104,7 +114,6 @@ spec:
                         - name
                         - namespace
                     required:
-                    - kubeConfigSecretRef
                     - url
                   services:
                     type: object

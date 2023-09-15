@@ -73,7 +73,7 @@ spec:
       name: compositeClusterServices
       patches:
         - fromFieldPath: spec.parameters.deletionPolicy
-          toFieldPath: spec.parameters.deletionPolicy
+          toFieldPath: spec.deletionPolicy
         - fromFieldPath: spec.parameters.id
           toFieldPath: spec.providerConfigRef.name
         - fromFieldPath: spec.parameters.services.operators.flux.version

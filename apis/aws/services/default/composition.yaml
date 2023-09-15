@@ -22,7 +22,7 @@ spec:
       fromFieldPath: spec.providerConfigRef.name
       toFieldPath: spec.providerConfigRef.name
     - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.deletionPolicy
+      fromFieldPath: spec.deletionPolicy
       toFieldPath: spec.deletionPolicy
   resources:
     - name: releaseFlux

@@ -7,11 +7,11 @@ metadata:
 spec:
   parameters:
     id: gitops-master
-    region: West Europe
+    region: West US
     version: "1.27.3"
     nodes:
       count: 3
-      size: small
+      instanceType: Standard_B2s
     serviceSelector: gitops-master
     gitops:
       url: https://github.com/upbound/caas-cluster-configuration

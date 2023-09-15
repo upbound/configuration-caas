@@ -8,10 +8,12 @@ metadata:
 spec:
   parameters:
     id: azure-spoke-02
-    region: West Europe
+    region: West US
     version: "1.27.3"
     nodes:
       count: 3
-      size: small
+      instanceType: Standard_B2s
+    gitops:
+      url: https://github.com/upbound/caas-cluster-configuration
   writeConnectionSecretToRef:
     name: azure-spoke-02-kubeconfig

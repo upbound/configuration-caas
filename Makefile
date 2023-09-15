@@ -11,10 +11,9 @@ PLATFORMS ?= linux_amd64
 # ====================================================================================
 # Setup Kubernetes tools
 
-UP_VERSION = v0.18.0
+UP_VERSION = v0.19.1
 UP_CHANNEL = stable
 UPTEST_VERSION = v0.5.0
-UPTEST_CLAIMS = .up/examples/aws/spoke-cluster.yaml,.up/examples/azure/spoke-cluster.yaml,.up/examples/gcp/spoke-cluster.yaml
 -include build/makelib/k8s_tools.mk
 # ====================================================================================
 # Setup XPKG
@@ -23,7 +22,7 @@ UPTEST_CLAIMS = .up/examples/aws/spoke-cluster.yaml,.up/examples/azure/spoke-clu
 # certain conventions such as the default examples root or package directory.
 XPKG_DIR = $(shell pwd)
 XPKG_EXAMPLES_DIR = .up/examples
-XPKG_IGNORE = .github/workflows/ci.yaml,.github/workflows/tag.yml,.github/workflows/e2e.yaml,test/setup.sh
+XPKG_IGNORE = .github/workflows/ci.yaml,.github/workflows/tag.yml,.github/workflows/e2e.yaml,init/*.yaml,.up/examples/aws/*.yaml,.up/examples/azure/*.yaml,.up/examples/gcp/*.yaml,.up/examples/upbound/*.yaml,.work/uptest-datasource.yaml
 
 XPKG_REG_ORGS ?= xpkg.upbound.io/upbound
 # NOTE(hasheddan): skip promoting on xpkg.upbound.io as channel tags are
@@ -68,7 +67,7 @@ build.init: $(UP)
 #   You can check the basic implementation here: https://github.com/upbound/uptest/blob/main/internal/templates/01-delete.yaml.tmpl.
 uptest: $(UPTEST) $(KUBECTL) $(KUTTL)
 	@$(INFO) running automated tests
-	@KUBECTL=$(KUBECTL) KUTTL=$(KUTTL) $(UPTEST) e2e $(UPTEST_CLAIMS) --setup-script=test/setup.sh --default-timeout=4800 || $(FAIL)
+	@KUBECTL=$(KUBECTL) KUTTL=$(KUTTL) $(UPTEST) e2e "${UPTEST_EXAMPLE_LIST}" --setup-script=test/setup.sh --default-timeout=3200 || $(FAIL)
 	@$(OK) running automated tests
 
 # This target requires the following environment variables to be set:

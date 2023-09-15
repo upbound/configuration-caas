@@ -4,21 +4,26 @@ on:
   issue_comment:
     types: [created]
 
+env:
+  trigger-keyword: '/test-examples'
+  go-version: '1.19'
+  package-type: configuration
+
 jobs:
   debug:
     runs-on: [e2-standard-8, linux]
     steps:
       - name: Debug
         run: |
-          echo "Trigger keyword: ${{ inputs.trigger-keyword }}"
-          echo "Go version: ${{ inputs.go-version }}"
+          echo "Trigger keyword: ${{ env.trigger-keyword }}"
+          echo "Go version: ${{ env.go-version }}"
           echo "github.event.comment.author_association: ${{ github.event.comment.author_association }}"
           echo "github.event.comment.body: ${{ github.event.comment.body }}"
 
   get-example-list:
     if: ${{ (github.event.comment.author_association == 'OWNER' || github.event.comment.author_association == 'MEMBER' || github.event.comment.author_association == 'COLLABORATOR' || github.event.comment.author_association == 'CONTRIBUTOR' ) &&
             github.event.issue.pull_request &&
-            contains(github.event.comment.body, inputs.trigger-keyword ) }}
+            contains(github.event.comment.body, env.trigger-keyword ) }}
     runs-on: [e2-standard-8, linux]
     outputs:
       example_list: ${{ steps.get-example-list-name.outputs.example-list }}
@@ -45,7 +50,7 @@ jobs:
           COMMENT: ${{ github.event.comment.body }}
         id: get-example-list-name
         run: |
-          PATHS=$(echo $COMMENT | sed 's/^.*\${{ inputs.trigger-keyword }}="//g' | cut -d '"' -f 1 | sed 's/,/ /g')
+          PATHS=$(echo $COMMENT | sed 's/^.*\${{ env.trigger-keyword }}="//g' | cut -d '"' -f 1 | sed 's/,/ /g')
           EXAMPLE_LIST=""
           for P in $PATHS; do EXAMPLE_LIST="${EXAMPLE_LIST},$(find $P -name '*.yaml' | tr '\n' ',')"; done
 
@@ -75,7 +80,7 @@ jobs:
   uptest:
     if: ${{ (github.event.comment.author_association == 'OWNER' || github.event.comment.author_association == 'MEMBER' || github.event.comment.author_association == 'COLLABORATOR' || github.event.comment.author_association == 'CONTRIBUTOR' ) &&
       github.event.issue.pull_request &&
-      contains(github.event.comment.body, inputs.trigger-keyword ) }}
+      contains(github.event.comment.body, env.trigger-keyword ) }}
     runs-on: [e2-standard-8, linux]
     needs: get-example-list
 
@@ -93,7 +98,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@6edd4406fa81c3da01a34fa6f6343087c207a568 # v3
         with:
-          go-version: ${{ inputs.go-version }}
+          go-version: ${{ env.go-version }}
 
       - name: Checkout PR
         id: checkout-pr
@@ -106,12 +111,12 @@ jobs:
           echo "commit-sha=$OUTPUT" >> $GITHUB_OUTPUT
 
       - name: Find the Go Build Cache
-        if: ${{ inputs.package-type  == 'provider' }}
+        if: ${{ env.package-type  == 'provider' }}
         id: go
         run: echo "cache=$(make go.cachedir)" >> $GITHUB_OUTPUT
 
       - name: Cache the Go Build Cache
-        if: ${{ inputs.package-type  == 'provider' }}
+        if: ${{ env.package-type  == 'provider' }}
         uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8 # v3
         with:
           path: ${{ steps.go.outputs.cache }}
@@ -119,7 +124,7 @@ jobs:
           restore-keys: ${{ runner.os }}-build-uptest-
 
       - name: Cache Go Dependencies
-        if: ${{ inputs.package-type  == 'provider' }}
+        if: ${{ env.package-type  == 'provider' }}
         uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8 # v3
         with:
           path: .work/pkg
@@ -127,7 +132,7 @@ jobs:
           restore-keys: ${{ runner.os }}-pkg-
 
       - name: Vendor Dependencies
-        if: ${{ inputs.package-type  == 'provider' }}
+        if: ${{ env.package-type  == 'provider' }}
         run: make vendor vendor.check
 
       - name: Run Uptest

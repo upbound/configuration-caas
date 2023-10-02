@@ -41,3 +41,5 @@ spec:
       version: ">=v0.36.0"
     - provider: xpkg.upbound.io/upbound/provider-gcp-servicenetworking
       version: ">=v0.36.0"
+    - function: xpkg.upbound.io/crossplane-contrib/function-patch-and-transform
+      version: ">=v0.1.4" 

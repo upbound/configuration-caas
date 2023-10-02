@@ -7,37 +7,66 @@ spec:
   compositeTypeRef:
     apiVersion: mcp.caas.upbound.io/v1alpha1
     kind: XControlPlane
-  resources:
-    - base:
-        apiVersion: mcp.upbound.io/v1alpha1
-        kind: ControlPlane
-        spec:
-          # ToDo(haarchri): switch to observe-only
-          deletionPolicy: Orphan
-      patches:
-        - fromFieldPath: metadata.labels[crossplane.io/claim-name]
-          toFieldPath: metadata.annotations[crossplane.io/external-name]
-        - fromFieldPath: spec.parameters.organizationName
-          toFieldPath: spec.forProvider.organizationName
-        - fromFieldPath: spec.parameters.configuration
-          toFieldPath: spec.forProvider.configuration   
-      name: controlplane
-    - base:
-        apiVersion: mcp.upbound.io/v1alpha1
-        kind: ControlPlaneAuth
-      patches:
-        - fromFieldPath: metadata.labels[crossplane.io/claim-name]
-          toFieldPath: spec.forProvider.controlPlaneName
-        - fromFieldPath: spec.parameters.organizationName
-          toFieldPath: spec.forProvider.organizationName
-        - fromFieldPath: spec.writeConnectionSecretToRef.namespace
-          toFieldPath: spec.writeConnectionSecretToRef.namespace
-        - fromFieldPath: metadata.labels[crossplane.io/claim-name]
-          toFieldPath: spec.writeConnectionSecretToRef.name
-          transforms:
-            - type: string
-              string:
-                fmt: "mcp-controlplane-%s"
-      connectionDetails:
-        - fromConnectionSecretKey: kubeconfig
-      name: controlplane-auth
+  mode: Pipeline
+  pipeline:
+    - step: patch-and-transform
+      functionRef:
+        name: crossplane-contrib-function-patch-and-transform
+      input:
+        apiVersion: pt.fn.crossplane.io/v1beta1
+        kind: Resources
+        patchSets:
+          - name: providerConfigRef
+            patches:
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.parameters.providerConfigName
+                toFieldPath: spec.providerConfigRef.name
+          - name: deletionPolicy
+            patches:
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.parameters.deletionPolicy
+                toFieldPath: spec.deletionPolicy
+        resources:
+          - base:
+              apiVersion: mcp.upbound.io/v1alpha1
+              kind: ControlPlane
+            patches:
+              - type: PatchSet
+                patchSetName: providerConfigRef
+              - type: PatchSet
+                patchSetName: deletionPolicy
+              - fromFieldPath: metadata.labels[crossplane.io/claim-name]
+                toFieldPath: metadata.annotations[crossplane.io/external-name]
+              - fromFieldPath: metadata.labels[crossplane.io/claim-name]
+                toFieldPath: spec.parameters.description
+              - fromFieldPath: spec.parameters.organizationName
+                toFieldPath: spec.forProvider.organizationName
+              - fromFieldPath: spec.parameters.configuration
+                toFieldPath: spec.forProvider.configuration   
+            name: controlplane
+          - base:
+              apiVersion: mcp.upbound.io/v1alpha1
+              kind: ControlPlaneAuth
+            patches:
+              - type: PatchSet
+                patchSetName: providerConfigRef
+              - type: PatchSet
+                patchSetName: deletionPolicy
+              - fromFieldPath: metadata.labels[crossplane.io/claim-name]
+                toFieldPath: spec.forProvider.controlPlaneName
+              - fromFieldPath: spec.parameters.organizationName
+                toFieldPath: spec.forProvider.organizationName
+              - fromFieldPath: spec.writeConnectionSecretToRef.namespace
+                toFieldPath: spec.writeConnectionSecretToRef.namespace
+              - fromFieldPath: metadata.labels[crossplane.io/claim-name]
+                toFieldPath: spec.writeConnectionSecretToRef.name
+                transforms:
+                  - type: string
+                    string:
+                      type: Format
+                      fmt: "mcp-controlplane-%s"
+            connectionDetails:
+              - name: kubeconfig
+                type: FromConnectionSecretKey
+                fromConnectionSecretKey: kubeconfig
+            name: controlplane-auth

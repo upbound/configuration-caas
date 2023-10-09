@@ -256,6 +256,7 @@ spec:
           forProvider:
             clusterNameSelector:
               matchControllerRef: true
+            diskSize: 100
             nodeRoleArnSelector:
               matchControllerRef: true
               matchLabels:

@@ -58,7 +58,7 @@ spec:
           toFieldPath: spec.forProvider.chart.url
     - name: mcp-kubeconfig-transfer-secret
       base:
-        apiVersion: kubernetes.crossplane.io/v1alpha1
+        apiVersion: kubernetes.crossplane.io/v1alpha2
         kind: Object
         spec:
           references:

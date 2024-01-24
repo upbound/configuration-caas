@@ -22,27 +22,23 @@ Advantages of Cluster-as-a-Service:
 
 This repository implements Compositions for AWS, Azure, and GCP provider APIs, as well as the Upbound Control Plane provider. For more information, review the API documentation below:
 
-- [`Cluster.aws.caas.upbound.io`](https://marketplace.upbound.io/configurations/upbound/configuration-caas/v0.1.0/resources/aws.caas.upbound.io/XCluster/v1alpha1) 
+- [`Cluster.aws.platformref.upbound.io`](https://marketplace.upbound.io/configurations/upbound/configuration-caas/latest/resources/aws.platformref.upbound.io/XCluster/v1alpha1) 
     - Provision/Manage an EKS Cluster
 
-- [`Cluster.azure.caas.upbound.io`](https://marketplace.upbound.io/configurations/upbound/configuration-caas/v0.1.0/resources/azure.caas.upbound.io/XCluster/v1alpha1) 
+- [`Cluster.azure.platformref.upbound.io`](https://marketplace.upbound.io/configurations/upbound/configuration-caas/latest/resources/azure.platformref.upbound.io/XCluster/v1alpha1) 
 
     - Provision/Manage an AKS Cluster
     
-- [`Cluster.gcp.caas.upbound.io`](https://marketplace.upbound.io/configurations/upbound/configuration-caas/v0.1.0/resources/gcp.caas.upbound.io/XCluster/v1alpha1) 
+- [`Cluster.gcp.platformref.upbound.io`](https://marketplace.upbound.io/configurations/upbound/configuration-caas/latest/resources/gcp.platformref.upbound.io/XCluster/v1alpha1) 
     - Provision/Manage a GKE Cluster
 
-- [`ControlPlane.mcp.caas.upbound.io`](https://marketplace.upbound.io/configurations/upbound/configuration-caas/v0.1.0/resources/mcp.caas.upbound.io/XControlPlane/v1alpha1)  
+- [`ControlPlane.mcp.caas.upbound.io`](https://marketplace.upbound.io/configurations/upbound/configuration-caas/latest/resources/mcp.caas.upbound.io/XControlPlane/v1alpha1)  
     - Provision/Manage an Upbound Control Plane
 
-- [`Connector.mcp.caas.upbound.io`](https://marketplace.upbound.io/configurations/upbound/configuration-caas/v0.1.0/resources/mcp.caas.upbound.io/XCluster/v1alpha1)
+- [`Connector.mcp.caas.upbound.io`](https://marketplace.upbound.io/configurations/upbound/configuration-caas/latest/resources/mcp.caas.upbound.io/XCluster/v1alpha1)
     - Provision/Manage an MCP Connector
 
-The [`apis`](https://github.com/upbound/configuration-caas/tree/main/apis)
-folder has the CompositeResourceDefinitons (XRDs) that define the schemas for
-the cloud provider APIs. 
-
-Once you clone the repository, you can modify the included compositions to fit your organizations needs. 
+Once you clone the repository, you can modify the included compositions and configurations to fit your organizations needs. 
     
 ## Deployment
 

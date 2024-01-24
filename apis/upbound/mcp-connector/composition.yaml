@@ -147,7 +147,7 @@ spec:
         - type: CombineFromComposite
           combine:
             variables:
-            - fromFieldPath: spec.parameters.version
+              - fromFieldPath: spec.parameters.version
             strategy: string
             string:
               fmt: https://charts.upbound.io/beta/mcp-connector-%s.tgz

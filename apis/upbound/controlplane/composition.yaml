@@ -20,7 +20,8 @@ spec:
         - fromFieldPath: spec.parameters.organizationName
           toFieldPath: spec.forProvider.organizationName
         - fromFieldPath: spec.parameters.configuration
-          toFieldPath: spec.forProvider.configuration   
+          toFieldPath: spec.forProvider.configuration
+
       name: controlplane
     - base:
         apiVersion: mcp.upbound.io/v1alpha1

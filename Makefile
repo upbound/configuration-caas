@@ -11,9 +11,9 @@ PLATFORMS ?= linux_amd64
 # ====================================================================================
 # Setup Kubernetes tools
 
-UP_VERSION = v0.19.1
+UP_VERSION = v0.21.0
 UP_CHANNEL = stable
-UPTEST_VERSION = v0.5.0
+UPTEST_VERSION = v0.9.0
 -include build/makelib/k8s_tools.mk
 # ====================================================================================
 # Setup XPKG
@@ -32,6 +32,7 @@ XPKGS = $(PROJECT_NAME)
 -include build/makelib/xpkg.mk
 
 CROSSPLANE_NAMESPACE = upbound-system
+CROSSPLANE_ARGS = "--enable-usages"
 -include build/makelib/local.xpkg.mk
 -include build/makelib/controlplane.mk
 
@@ -75,3 +76,13 @@ uptest: $(UPTEST) $(KUBECTL) $(KUTTL)
 e2e: build controlplane.up local.xpkg.deploy.configuration.$(PROJECT_NAME) uptest
 
 .PHONY: uptest e2e
+
+render:
+	crossplane beta render examples/cluster-claim.yaml apis/cluster/composition.yaml examples/functions.yaml -r
+
+yamllint:
+	@$(INFO) running yamllint
+	@yamllint ./apis || $(FAIL)
+	@$(OK) running yamllint
+
+.PHONY: uptest e2e render yamllint

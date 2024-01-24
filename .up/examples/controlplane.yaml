@@ -8,4 +8,4 @@ spec:
     organizationName: upbound
     configuration: configuration-caas
   writeConnectionSecretToRef:
-    name: mcp-caas-kubeconfig
+    name: caas-kubeconfig

@@ -1,0 +1,27 @@
+apiVersion: caas.upbound.io/v1alpha1
+kind: Cluster
+metadata:
+  name: caas-azure-flux
+  namespace: default
+spec:
+  compositeDeletePolicy: Foreground
+  parameters:
+    cloud: azure
+    id: caas-azure-flux
+    region: westus
+    version: "1.27.3"
+    nodes:
+      count: 1
+      instanceType: Standard_B2s
+    gitops:
+      operator: flux
+      git:
+        url: https://github.com/upbound/configuration-caas/
+        ref:
+          # refs/heads/main
+          # refs/tags/v0.1.0
+          # refs/pull/420/head
+          # refs/merge-requests/1/head
+          name: refs/heads/main
+  writeConnectionSecretToRef:
+    name: caas-azure-flux-kubeconfig

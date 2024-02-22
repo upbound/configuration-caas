@@ -11,9 +11,10 @@ PLATFORMS ?= linux_amd64
 # ====================================================================================
 # Setup Kubernetes tools
 
-UP_VERSION = v0.19.1
+UP_VERSION = v0.24.1
 UP_CHANNEL = stable
-UPTEST_VERSION = v0.5.0
+UPTEST_VERSION = v0.11.0
+
 -include build/makelib/k8s_tools.mk
 # ====================================================================================
 # Setup XPKG
@@ -22,7 +23,7 @@ UPTEST_VERSION = v0.5.0
 # certain conventions such as the default examples root or package directory.
 XPKG_DIR = $(shell pwd)
 XPKG_EXAMPLES_DIR = .up/examples
-XPKG_IGNORE = .github/workflows/ci.yaml,.github/workflows/tag.yml,.github/workflows/e2e.yaml,init/*.yaml,.up/examples/aws/*.yaml,.up/examples/azure/*.yaml,.up/examples/gcp/*.yaml,.up/examples/upbound/*.yaml,.work/uptest-datasource.yaml
+XPKG_IGNORE = .github/workflows/*.yml,.github/workflows/*.yaml,init/*.yaml,examples/flux/*.yaml,examples/*.yaml,examples/argocd/*.yaml,.work/uptest-datasource.yaml
 
 XPKG_REG_ORGS ?= xpkg.upbound.io/upbound
 # NOTE(hasheddan): skip promoting on xpkg.upbound.io as channel tags are
@@ -32,6 +33,7 @@ XPKGS = $(PROJECT_NAME)
 -include build/makelib/xpkg.mk
 
 CROSSPLANE_NAMESPACE = upbound-system
+CROSSPLANE_ARGS = "--enable-usages"
 -include build/makelib/local.xpkg.mk
 -include build/makelib/controlplane.mk
 
@@ -62,16 +64,27 @@ build.init: $(UP)
 # End to End Testing
 
 # This target requires the following environment variables to be set:
-# - UPTEST_CLOUD_CREDENTIALS, cloud credentials for the provider being tested, e.g. export UPTEST_CLOUD_CREDENTIALS=$(cat ~/.aws/credentials)
-# - To ensure the proper functioning of the end-to-end test resource pre-deletion hook, it is crucial to arrange your resources appropriately. 
-#   You can check the basic implementation here: https://github.com/upbound/uptest/blob/main/internal/templates/01-delete.yaml.tmpl.
+# $ export UPTEST_CLOUD_CREDENTIALS=$(echo "AWS='$(cat ~/.aws/credentials)'\nAZURE='$(cat ~/.azure/credentials.json)'\nGCP='$(cat ~/.gcloud/credentials.json)")
 uptest: $(UPTEST) $(KUBECTL) $(KUTTL)
 	@$(INFO) running automated tests
-	@KUBECTL=$(KUBECTL) KUTTL=$(KUTTL) $(UPTEST) e2e "${UPTEST_EXAMPLE_LIST}" --setup-script=test/setup.sh --default-timeout=3200 || $(FAIL)
+	@KUBECTL=$(KUBECTL) KUTTL=$(KUTTL) CROSSPLANE_NAMESPACE=$(CROSSPLANE_NAMESPACE) $(UPTEST) e2e "${UPTEST_EXAMPLE_LIST}" --data-source="${UPTEST_DATASOURCE_PATH}" --setup-script=test/setup.sh --default-timeout=4800 || $(FAIL)
 	@$(OK) running automated tests
 
 # This target requires the following environment variables to be set:
-# - UPTEST_CLOUD_CREDENTIALS, cloud credentials for the provider being tested, e.g. export UPTEST_CLOUD_CREDENTIALS=$(cat ~/.aws/credentials)
+# $ export UPTEST_CLOUD_CREDENTIALS=$(echo "AWS='$(cat ~/.aws/credentials)'\nAZURE='$(cat ~/.azure/credentials.json)'\nGCP='$(cat ~/.gcloud/credentials.json)")
 e2e: build controlplane.up local.xpkg.deploy.configuration.$(PROJECT_NAME) uptest
 
-.PHONY: uptest e2e
+render:
+	crossplane beta render examples/flux/aws-cluster.yaml apis/composition.yaml examples/functions.yaml -r
+	crossplane beta render examples/flux/gcp-cluster.yaml apis/composition.yaml examples/functions.yaml -r
+	crossplane beta render examples/flux/azure-cluster.yaml apis/composition.yaml examples/functions.yaml -r
+	crossplane beta render examples/argocd/aws-cluster.yaml apis/composition.yaml examples/functions.yaml -r
+	crossplane beta render examples/argocd/gcp-cluster.yaml apis/composition.yaml examples/functions.yaml -r
+	crossplane beta render examples/argocd/azure-cluster.yaml apis/composition.yaml examples/functions.yaml -r
+
+yamllint:
+	@$(INFO) running yamllint
+	@yamllint ./apis || $(FAIL)
+	@$(OK) running yamllint
+
+.PHONY: uptest e2e render yamllint

@@ -2,7 +2,7 @@
 
 This repo provides a configuration for a Cluster-as-a-Service, built on top of
 Crossplane. This configuration exposes a simple API to your internal developers
-for creating Kubernetes clusters. In the background, this configuration can create clusters in AWS, Azure, and GCP. It automatically applies common recommended practices, such as connecting the cluster to existing Flux deployments, automating VPC setup, and creating a Flux operator in a cluster.
+for creating Kubernetes clusters. In the background, this configuration can create clusters in AWS, Azure, and GCP. It automatically applies common recommended practices, such as connecting the cluster to existing Flux or ArogCD deployments, automating VPC setup, and creating a Flux or ArgoCD operator in a cluster.
 
 This repo is a starting point for you to deliver your own
 Cluster-as-a-Service. Fork this repository and customize the configuration to
@@ -13,7 +13,7 @@ To deploy a multicloud Cluster-as-a-Service control plane in your organization, 
 
 Advantages of Cluster-as-a-Service:
 
-- GitOps workflow
+- GitOps workflow with Flux or ArgoCD
 - Production-ready template
 - Scalable architecture
 - Product agnostic approach
@@ -22,20 +22,13 @@ Advantages of Cluster-as-a-Service:
 
 This repository implements Compositions for AWS, Azure, and GCP provider APIs, as well as the Upbound Control Plane provider. For more information, review the API documentation below:
 
-- [`Cluster.aws.caas.upbound.io`](https://marketplace.upbound.io/configurations/upbound/configuration-caas/v0.1.0/resources/aws.caas.upbound.io/XCluster/v1alpha1) 
-    - Provision/Manage an EKS Cluster
+- [`Cluster.aws.caas.upbound.io`](https://marketplace.upbound.io/configurations/upbound/configuration-caas/latest/resources/caas.upbound.io/XCluster/v1alpha1) 
+    - Provision/Manage an EKS,AKS or GKE Cluster
 
-- [`Cluster.azure.caas.upbound.io`](https://marketplace.upbound.io/configurations/upbound/configuration-caas/v0.1.0/resources/azure.caas.upbound.io/XCluster/v1alpha1) 
-
-    - Provision/Manage an AKS Cluster
-    
-- [`Cluster.gcp.caas.upbound.io`](https://marketplace.upbound.io/configurations/upbound/configuration-caas/v0.1.0/resources/gcp.caas.upbound.io/XCluster/v1alpha1) 
-    - Provision/Manage a GKE Cluster
-
-- [`ControlPlane.mcp.caas.upbound.io`](https://marketplace.upbound.io/configurations/upbound/configuration-caas/v0.1.0/resources/mcp.caas.upbound.io/XControlPlane/v1alpha1)  
+- [`ControlPlane.mcp.caas.upbound.io`](https://marketplace.upbound.io/configurations/upbound/configuration-caas/latest/resources/mcp.caas.upbound.io/XControlPlane/v1alpha1)  
     - Provision/Manage an Upbound Control Plane
 
-- [`Connector.mcp.caas.upbound.io`](https://marketplace.upbound.io/configurations/upbound/configuration-caas/v0.1.0/resources/mcp.caas.upbound.io/XCluster/v1alpha1)
+- [`Connector.mcp.caas.upbound.io`](https://marketplace.upbound.io/configurations/upbound/configuration-caas/latest/resources/mcp.caas.upbound.io/XCluster/v1alpha1)
     - Provision/Manage an MCP Connector
 
 The [`apis`](https://github.com/upbound/configuration-caas/tree/main/apis)

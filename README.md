@@ -22,7 +22,7 @@ Advantages of Cluster-as-a-Service:
 
 This repository implements Compositions for AWS, Azure, and GCP provider APIs, as well as the Upbound Control Plane provider. For more information, review the API documentation below:
 
-- [`Cluster.aws.caas.upbound.io`](https://marketplace.upbound.io/configurations/upbound/configuration-caas/latest/resources/caas.upbound.io/XCluster/v1alpha1) 
+- [`Cluster.caas.upbound.io`](https://marketplace.upbound.io/configurations/upbound/configuration-caas/latest/resources/caas.upbound.io/XCluster/v1alpha1) 
     - Provision/Manage an EKS,AKS or GKE Cluster
 
 - [`ControlPlane.mcp.caas.upbound.io`](https://marketplace.upbound.io/configurations/upbound/configuration-caas/latest/resources/mcp.caas.upbound.io/XControlPlane/v1alpha1)  

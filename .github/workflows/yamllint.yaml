@@ -1,0 +1,15 @@
+name: yamllint
+on: [pull_request]
+jobs:
+  yamllint:
+    name: runner / yamllint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+      - name: yamllint
+        uses: reviewdog/action-yamllint@e419e43894e391d358ebf996800673d72de6c69b # v1.11.0
+        with:
+          reporter: github-pr-review
+          filter_mode: nofilter
+          yamllint_flags: 'apis/'
+          fail_on_error: true

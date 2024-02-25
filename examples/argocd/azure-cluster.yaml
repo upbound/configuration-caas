@@ -1,0 +1,24 @@
+apiVersion: caas.upbound.io/v1alpha1
+kind: Cluster
+metadata:
+  name: caas-azure-argocd
+  namespace: default
+spec:
+  compositeDeletePolicy: Foreground
+  parameters:
+    cloud: azure
+    id: caas-azure-argocd
+    region: westus
+    version: "1.27.3"
+    nodes:
+      count: 1
+      instanceType: Standard_B2s
+    gitops:
+      operator: argocd
+      git:
+        url: https://github.com/upbound/configuration-caas.git
+        path: configuration/infrastructure.yaml
+        ref:
+          name: HEAD
+  writeConnectionSecretToRef:
+    name: caas-azure-argocd-kubeconfig

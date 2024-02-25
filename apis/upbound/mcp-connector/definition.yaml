@@ -11,46 +11,46 @@ spec:
     kind: Connector
     plural: connectors
   versions:
-  - name: v1alpha1
-    served: true
-    referenceable: true
-    schema:
-      openAPIV3Schema:
-        type: object
-        properties:
-          spec:
-            type: object
-            properties:
-              parameters:
-                type: object
-                description: Connector configuration parameters.
-                properties:
-                  deletionPolicy:
-                    description: When the Composition is deleted, delete the Upbound resources. Defaults to Delete
-                    enum:
-                    - Delete
-                    - Orphan
-                    type: string
-                    default: Delete
-                  providerConfigName:
-                    description: Crossplane ProviderConfig to use for provisioning this resources
-                    type: string
-                    default: default
-                  version:
-                    type: string
-                    description: mcp-connector version of the helm-chart
-                    default: "0.3.2"
-                  organizationName:
-                    type: string
-                    description: OrganizationName is the name of the organization to which the control plane belongs
-                  controlPlaneName:
-                    type: string
-                    description: ControlPlaneName is the name of the mcp controlplane to connect a spoke cluster.
-                required:
-                - controlPlaneName
-                - deletionPolicy
-                - organizationName
-                - providerConfigName
-                - version
-            required:
-            - parameters
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                parameters:
+                  type: object
+                  description: Connector configuration parameters.
+                  properties:
+                    deletionPolicy:
+                      description: When the Composition is deleted, delete the Upbound resources. Defaults to Delete
+                      enum:
+                        - Delete
+                        - Orphan
+                      type: string
+                      default: Delete
+                    providerConfigName:
+                      description: Crossplane ProviderConfig to use for provisioning this resources
+                      type: string
+                      default: default
+                    version:
+                      type: string
+                      description: mcp-connector version of the helm-chart
+                      default: "0.3.2"
+                    organizationName:
+                      type: string
+                      description: OrganizationName is the name of the organization to which the control plane belongs
+                    controlPlaneName:
+                      type: string
+                      description: ControlPlaneName is the name of the mcp controlplane to connect a spoke cluster.
+                  required:
+                    - controlPlaneName
+                    - deletionPolicy
+                    - organizationName
+                    - providerConfigName
+                    - version
+              required:
+                - parameters

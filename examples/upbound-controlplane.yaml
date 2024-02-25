@@ -1,0 +1,12 @@
+apiVersion: mcp.caas.upbound.io/v1alpha1
+kind: ControlPlane
+metadata:
+  name: caas
+  namespace: default
+spec:
+  parameters:
+    organizationName: upbound
+    configuration: caas-test
+    robotPermission: owner
+  writeConnectionSecretToRef:
+    name: caas-kubeconfig

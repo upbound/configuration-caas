@@ -11,30 +11,42 @@ spec:
     kind: ControlPlane
     plural: controlplanes
   connectionSecretKeys:
-  - kubeconfig
+    - kubeconfig
   versions:
-  - name: v1alpha1
-    served: true
-    referenceable: true
-    schema:
-      openAPIV3Schema:
-        type: object
-        properties:
-          spec:
-            type: object
-            properties:
-              parameters:
-                type: object
-                description: ControlPlane configuration parameters.
-                properties:
-                  organizationName:
-                    type: string
-                    description: OrganizationName is the name of the organization to which the control plane belongs
-                  configuration:
-                    type: string
-                    description: Configuration is the name of the predefined configuration.
-                required:
-                - organizationName
-                - configuration
-            required:
-            - parameters
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                parameters:
+                  type: object
+                  description: ControlPlane configuration parameters.
+                  properties:
+                    organizationName:
+                      type: string
+                      description: OrganizationName is the name of the organization to which the control plane belongs
+                    configuration:
+                      type: string
+                      description: Configuration is the name of the predefined configuration.
+                    robotPermission:
+                      type: string
+                      description: Robot Permission for ControlPlane
+                  required:
+                    - organizationName
+                    - configuration
+                    - robotPermission
+              required:
+                - parameters
+            status:
+              description: A Status represents the observed state
+              properties:
+                mcp:
+                  description: Freeform field containing status information for mcp
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+              type: object

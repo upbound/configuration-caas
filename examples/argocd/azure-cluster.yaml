@@ -9,7 +9,7 @@ spec:
     cloud: azure
     id: caas-azure-argocd
     region: westus
-    version: "1.27.3"
+    version: "1.28"
     nodes:
       count: 1
       instanceType: Standard_B2s

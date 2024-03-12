@@ -9,7 +9,7 @@ Cluster-as-a-Service. Fork this repository and customize the configuration to
 meet your teams' needs.
 
 To deploy a multicloud Cluster-as-a-Service control plane in your organization, check out the
-[Multicloud Quickstart](https://docs.upbound.io/quickstart/multicloud-deploy/).
+[Multicloud Quickstart](https://docs.upbound.io/concepts/multicloud-deploy/).
 
 Advantages of Cluster-as-a-Service:
 
@@ -39,7 +39,7 @@ Once you clone the repository, you can modify the included compositions to fit y
     
 ## Deployment
 
-To deploy in a new organization, follow the [Get Started guide](https://docs.upbound.io/quickstart/multicloud-deploy/).
+To deploy in a new organization, follow the [Get Started guide](https://docs.upbound.io/concepts/multicloud-deploy/).
 
 For deployments to an existing organization, log in to your Upbound organization
 and go to **Configurations** and click **Create Configuration**.
@@ -54,7 +54,7 @@ cloned repo you just created.
 After a few minutes, your new control plane is ready!
 
 To authenticate and configure your providers, see the [multicloud deployment
-guide](https://docs.upbound.io/quickstart/multicloud-deploy/#configure-provider-upbound).
+guide](https://docs.upbound.io/concepts/multicloud-deploy/#configure-provider-upbound).
 
 Once authenticated and configured, your self-service Upbound console lists
 available cloud resources.

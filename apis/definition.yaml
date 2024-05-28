@@ -64,6 +64,46 @@ spec:
                       enum:
                         - basic
                       default: basic
+                    networkConfig:
+                      type: object
+                      description: Network configuration parameters. Only used when provider is AWS.
+                      properties:
+                        cidrBlock:
+                          type: string
+                          description: CIDR block for the Network
+                          default: 192.168.0.0/16
+                        subnets:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              availabilityZone:
+                                type: string
+                              type:
+                                type: string
+                                enum:
+                                  - public
+                                  - private
+                              cidrBlock:
+                                type: string
+                          description: Subnets to create in the VPC
+                          required:
+                          - availabilityZone
+                          - type
+                          - cidrBlock
+                          default:
+                            - availabilityZone: us-west-2a
+                              type: public
+                              cidrBlock: 192.168.0.0/18
+                            - availabilityZone: us-west-2b
+                              type: public
+                              cidrBlock: 192.168.64.0/18
+                            - availabilityZone: us-west-2a
+                              type: private
+                              cidrBlock: 192.168.128.0/18
+                            - availabilityZone: us-west-2b
+                              type: private
+                              cidrBlock: 192.168.192.0/18
                     deletionPolicy:
                       description: Delete the external resources when the Claim/XR is deleted. Defaults to Delete
                       enum:

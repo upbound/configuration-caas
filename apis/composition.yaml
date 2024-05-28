@@ -39,6 +39,12 @@ spec:
                 policy:
                   fromFieldPath: Required
                 toFieldPath: status.subnetIds
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.parameters.networkConfig.cidrBlock
+                toFieldPath: spec.parameters.vpcCidrBlock
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.parameters.networkConfig.subnets
+                toFieldPath: spec.parameters.subnets
 
           - name: XEKS
             condition: observed.composite.resource.spec.parameters.cloud == "aws"

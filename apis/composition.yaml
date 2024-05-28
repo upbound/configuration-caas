@@ -34,9 +34,6 @@ spec:
               - type: FromCompositeFieldPath
                 fromFieldPath: spec.parameters.providerConfigName
                 toFieldPath: spec.parameters.providerConfigName
-              - type: FromCompositeFieldPath
-                fromFieldPath: spec.parameters.networkSelector
-                toFieldPath: spec.compositionSelector.matchLabels[type]
               - type: ToCompositeFieldPath
                 fromFieldPath: status.subnetIds
                 policy:

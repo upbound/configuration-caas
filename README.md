@@ -28,7 +28,7 @@ This repository implements Compositions for AWS, Azure, and GCP provider APIs, a
 - [`ControlPlane.mcp.caas.upbound.io`](https://marketplace.upbound.io/configurations/upbound/configuration-caas/latest/resources/mcp.caas.upbound.io/XControlPlane/v1alpha1)  
     - Provision/Manage an Upbound Control Plane
 
-- [`Connector.mcp.caas.upbound.io`](https://marketplace.upbound.io/configurations/upbound/configuration-caas/latest/resources/mcp.caas.upbound.io/XCluster/v1alpha1)
+- [`Connector.mcp.caas.upbound.io`](https://marketplace.upbound.io/configurations/upbound/configuration-caas/latest/resources/mcp.caas.upbound.io/XConnector/v1alpha1)
     - Provision/Manage an MCP Connector
 
 The [`apis`](https://github.com/upbound/configuration-caas/tree/main/apis)
@@ -39,7 +39,7 @@ Once you clone the repository, you can modify the included compositions to fit y
     
 ## Deployment
 
-To deploy in a new organization, follow the [Get Started guide](https://docs.upbound.io/concepts/multicloud-deploy/).
+To deploy in a new organization, follow the [Get Started guide](https://docs.upbound.io/quickstart/).
 
 For deployments to an existing organization, log in to your Upbound organization
 and go to **Configurations** and click **Create Configuration**.
@@ -53,8 +53,8 @@ cloned repo you just created.
 
 After a few minutes, your new control plane is ready!
 
-To authenticate and configure your providers, see the [multicloud deployment
-guide](https://docs.upbound.io/concepts/multicloud-deploy/#configure-provider-upbound).
+To authenticate and configure your providers, see the [provider authentication
+guide](https://docs.upbound.io/providers/).
 
 Once authenticated and configured, your self-service Upbound console lists
 available cloud resources.
@@ -65,7 +65,7 @@ Cluster-as-a-Service deployments work best when managed in your infrastructure a
 lifecycle. 
 
 For more information on how to integrate Argo CD and Flux in your Upbound
-environment, check out the [GitOps with Control Planes doc](https://docs.upbound.io/concepts/mcp/control-plane-connector/).
+environment, check out the [GitOps with Control Planes doc](https://docs.upbound.io/mcp/gitops/).
 
 ## Contributing
 

@@ -8,9 +8,6 @@ This repo is a starting point for you to deliver your own
 Cluster-as-a-Service. Fork this repository and customize the configuration to
 meet your teams' needs.
 
-To deploy a multicloud Cluster-as-a-Service control plane in your organization, check out the
-[Multicloud Quickstart](https://docs.upbound.io/concepts/multicloud-deploy/).
-
 Advantages of Cluster-as-a-Service:
 
 - GitOps workflow with Flux or ArgoCD

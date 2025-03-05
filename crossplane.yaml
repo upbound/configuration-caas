@@ -19,33 +19,33 @@ spec:
   dependsOn:
     - configuration: xpkg.upbound.io/upbound/configuration-aws-network
       # renovate: datasource=github-releases depName=upbound/configuration-aws-network
-      version: "v0.11.0"
+      version: "v0.23.0"
     - configuration: xpkg.upbound.io/upbound/configuration-aws-eks
       # renovate: datasource=github-releases depName=upbound/configuration-aws-eks
-      version: "v0.9.0"
+      version: "v0.16.0"
     - configuration: xpkg.upbound.io/upbound/configuration-azure-network
       # renovate: datasource=github-releases depName=upbound/configuration-azure-network
-      version: "v0.7.0"
+      version: "v0.14.0"
     - configuration: xpkg.upbound.io/upbound/configuration-azure-aks
       # renovate: datasource=github-releases depName=upbound/configuration-azure-aks
-      version: "v0.6.0"
+      version: "v0.12.0"
     - configuration: xpkg.upbound.io/upbound/configuration-gcp-network
       # renovate: datasource=github-releases depName=upbound/configuration-gcp-network
-      version: "v0.3.0"
+      version: "v0.8.0"
     - configuration: xpkg.upbound.io/upbound/configuration-gcp-gke
       # renovate: datasource=github-releases depName=upbound/configuration-gcp-gke
-      version: "v0.3.0"
+      version: "v0.10.0"
     - function: xpkg.upbound.io/upboundcare/function-conditional-patch-and-transform
       version: "v0.4.0"
     - configuration: xpkg.upbound.io/upbound/configuration-observability-oss
       # renovate: datasource=github-releases depName=upbound/configuration-observability-oss
-      version: "v0.4.0"
+      version: "v0.9.0"
     - configuration: xpkg.upbound.io/upbound/configuration-gitops-flux
       # renovate: datasource=github-releases depName=upbound/configuration-gitops-flux
-      version: "v0.4.0"
+      version: "v0.10.0"
     - configuration: xpkg.upbound.io/upbound/configuration-gitops-argocd
       # renovate: datasource=github-releases depName=upbound/configuration-gitops-argocd
-      version: "v0.5.0"
+      version: "v0.12.0"
     - provider: xpkg.upbound.io/upbound/provider-upbound
       # renovate: datasource=github-releases depName=upbound/provider-upbound
-      version: "v0.7.0"
+      version: "v0.8.0"

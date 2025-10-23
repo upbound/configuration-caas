@@ -22,7 +22,6 @@ _items = [
                             version = "1.31"
                             deletionPolicy = "Delete"
                             providerConfigName = "default"
-                            networkSelector = "basic"
                             iam = {
                                 roleArn = "arn:aws:iam::123456789:role/AWSReservedSSO_AdministratorAccess_test"
                             }
@@ -41,13 +40,13 @@ _items = [
                             }
                             operators = {
                                 prometheus = {
-                                    version = "v67.4.0"
+                                    version = "67.4.0"
                                 }
                                 flux = {
-                                    version = "v2.4.0"
+                                    version = "2.16.4"
                                 }
                                 fluxSync = {
-                                    version = "v1.10.0"
+                                    version = "1.13.4"
                                 }
                             }
                         }
@@ -72,11 +71,6 @@ _items = [
                             region = "us-west-2"
                             deletionPolicy = "Delete"
                             providerConfigName = "default"
-                        }
-                        compositionSelector = {
-                            matchLabels = {
-                                type = "basic"
-                            }
                         }
                     }
                 }

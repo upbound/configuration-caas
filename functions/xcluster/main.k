@@ -18,7 +18,6 @@ id = oxr.spec.parameters.id
 region = oxr.spec.parameters.region
 deletionPolicy = oxr.spec.parameters.deletionPolicy
 providerConfigName = oxr.spec.parameters.providerConfigName
-networkSelector = oxr.spec.parameters.networkSelector
 version = oxr.spec.parameters.version
 nodeCount = oxr.spec.parameters.nodes.count
 instanceType = oxr.spec.parameters.nodes.instanceType
@@ -49,11 +48,6 @@ if cloud == "aws":
                     region: region
                     deletionPolicy: deletionPolicy
                     providerConfigName: providerConfigName
-                }
-                compositionSelector: {
-                    matchLabels: {
-                        type: networkSelector
-                    }
                 }
             }
         }
@@ -115,13 +109,10 @@ if cloud == "azure":
                 parameters: {
                     id: id
                     region: region
+                    addressRange: "10.1.0.0/16"
+                    generalSubnetRange: "10.1.1.0/24"
                     deletionPolicy: deletionPolicy
                     providerConfigName: providerConfigName
-                }
-                compositionSelector: {
-                    matchLabels: {
-                        type: networkSelector
-                    }
                 }
             }
         }
@@ -181,11 +172,6 @@ if cloud == "gcp":
                     region: region
                     deletionPolicy: deletionPolicy
                     providerConfigName: providerConfigName
-                }
-                compositionSelector: {
-                    matchLabels: {
-                        type: networkSelector
-                    }
                 }
             }
         }

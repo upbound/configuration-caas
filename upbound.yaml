@@ -1,0 +1,72 @@
+apiVersion: meta.dev.upbound.io/v2alpha1
+kind: Project
+metadata:
+  name: configuration-caas
+spec:
+  apiDependencies:
+  - git:
+      path: cluster/crds
+      ref: release-1.20
+      repository: https://github.com/crossplane/crossplane
+    type: crd
+  - k8s:
+      version: v1.33.0
+    type: k8s
+  crossplane:
+    version: '>=v1.20.0'
+  dependsOn:
+  - apiVersion: pkg.crossplane.io/v1
+    kind: Configuration
+    package: xpkg.upbound.io/upbound/configuration-aws-network
+    version: v0.24.0
+  - apiVersion: pkg.crossplane.io/v1
+    kind: Configuration
+    package: xpkg.upbound.io/upbound/configuration-aws-eks
+    version: v0.19.0
+  - apiVersion: pkg.crossplane.io/v1
+    kind: Configuration
+    package: xpkg.upbound.io/upbound/configuration-azure-network
+    version: v0.18.0
+  - apiVersion: pkg.crossplane.io/v1
+    kind: Configuration
+    package: xpkg.upbound.io/upbound/configuration-azure-aks
+    version: v0.17.0
+  - apiVersion: pkg.crossplane.io/v1
+    kind: Configuration
+    package: xpkg.upbound.io/upbound/configuration-gcp-network
+    version: v0.9.0
+  - apiVersion: pkg.crossplane.io/v1
+    kind: Configuration
+    package: xpkg.upbound.io/upbound/configuration-gcp-gke
+    version: v0.11.1
+  - apiVersion: pkg.crossplane.io/v1
+    kind: Configuration
+    package: xpkg.upbound.io/upbound/configuration-observability-oss
+    version: v0.10.1
+  - apiVersion: pkg.crossplane.io/v1
+    kind: Configuration
+    package: xpkg.upbound.io/upbound/configuration-gitops-flux
+    version: v0.12.0
+  - apiVersion: pkg.crossplane.io/v1
+    kind: Configuration
+    package: xpkg.upbound.io/upbound/configuration-gitops-argocd
+    version: v0.13.0-rc1
+  - apiVersion: pkg.crossplane.io/v1
+    kind: Provider
+    package: xpkg.upbound.io/upbound/provider-upbound
+    version: v1.0.0
+  - apiVersion: pkg.crossplane.io/v1
+    kind: Function
+    package: xpkg.upbound.io/crossplane-contrib/function-auto-ready
+    version: '>=v0.0.0'
+  description: This configuration-caas configuration offers Kubernetes Clusters across
+    AWS, Azure, and GCP with GitOps integration.
+  license: Apache-2.0
+  maintainer: Upbound <support@upbound.io>
+  readme: |
+    This Configuration bundles an Upbound Cloud extension and an API
+    definition. The API will allow control planes to provision fully
+    configured Kubernetes Service clusters, composed
+    using cloud service primitives from the Upbound Official Providers
+  repository: xpkg.upbound.io/upbound/configuration-caas
+  source: github.com/upbound/configuration-caas

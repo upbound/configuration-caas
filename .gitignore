@@ -1,9 +1,3 @@
-init
-/.cache
-/.work
-/_output
-/results
-/.idea
-
-*.xpkg
-kubeconfig
+.venv
+_output
+.up

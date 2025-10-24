@@ -1,0 +1,31 @@
+apiVersion: caas.upbound.io/v1alpha1
+kind: XCluster
+metadata:
+  name: caas-azure-argocd
+spec:
+  parameters:
+    cloud: azure
+    id: caas-azure-argocd
+    region: eastus
+    version: "1.31"
+    deletionPolicy: Delete
+    providerConfigName: default
+    nodes:
+      count: 3
+      instanceType: Standard_B2s
+    gitops:
+      operator: argocd
+      git:
+        url: https://github.com/upbound/configuration-caas.git
+        path: configuration/infrastructure.yaml
+        ref:
+          name: refs/heads/main
+      ingressUrl: https://argocd.example.com
+    operators:
+      prometheus:
+        version: "67.4.0"
+      argocd:
+        version: "7.7.7"
+  writeConnectionSecretToRef:
+    name: caas-azure-argocd-kubeconfig
+    namespace: upbound-system

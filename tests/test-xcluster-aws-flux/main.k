@@ -92,6 +92,10 @@ _items = [
                             deletionPolicy = "Delete"
                             providerConfigName = "default"
                             version = "1.31"
+                            accessConfig = {
+                                authenticationMode = "API_AND_CONFIG_MAP"
+                                bootstrapClusterCreatorAdminPermissions = True
+                            }
                             nodes = {
                                 count = 3
                                 instanceType = "t3.small"
@@ -147,7 +151,7 @@ _items = [
                             id = "caas-aws-flux"
                             operators = {
                                 prometheus = {
-                                    version = "v67.4.0"
+                                    version = "67.4.0"
                                 }
                             }
                         }
@@ -168,10 +172,10 @@ _items = [
                             providerConfigName = "caas-aws-flux"
                             operators = {
                                 flux = {
-                                    version = "v2.4.0"
+                                    version = "2.16.4"
                                 }
                                 fluxSync = {
-                                    version = "v1.10.0"
+                                    version = "1.13.4"
                                 }
                             }
                             source = {
@@ -209,6 +213,40 @@ _items = [
                                 matchControllerRef = True
                             }
                         }
+                    }
+                }
+            ]
+            observedResources: [
+                platformawsv1alpha1.XEKS{
+                    metadata.annotations = {
+                        "crossplane.io/composition-resource-name": "XEKS"
+                    }
+                    spec = {
+                        parameters = {
+                            id = "caas-aws-flux"
+                            region = "us-west-2"
+                            version = "1.31"
+                            deletionPolicy = "Delete"
+                            providerConfigName = "default"
+                            accessConfig = {
+                                authenticationMode = "API_AND_CONFIG_MAP"
+                                bootstrapClusterCreatorAdminPermissions = True
+                            }
+                            nodes = {
+                                count = 3
+                                instanceType = "t3.small"
+                            }
+                        }
+                    }
+                    status = {
+                        conditions = [
+                            {
+                                type: "Ready"
+                                status: "True"
+                                reason: "Available"
+                                lastTransitionTime: "2024-01-01T00:00:00Z"
+                            }
+                        ]
                     }
                 }
             ]

@@ -12,6 +12,13 @@ _metadata = lambda name: str -> any {
     { annotations = { "krm.kcl.dev/composition-resource-name" = name }}
 }
 
+# Helper function to check if a resource is ready
+_isReady = lambda resourceName: str -> bool {
+    resource = _ocds?[resourceName]?.Resource
+    conditions = resource?.status?.conditions or []
+    all_true([c.status == "True" for c in conditions if c.type == "Ready"]) if len(conditions) > 0 else False
+}
+
 # Extract parameters from XR
 cloud = oxr.spec.parameters.cloud
 id = oxr.spec.parameters.id
@@ -67,6 +74,10 @@ if cloud == "aws":
                     deletionPolicy: deletionPolicy
                     providerConfigName: providerConfigName
                     version: version
+                    accessConfig: {
+                        authenticationMode: "API_AND_CONFIG_MAP"
+                        bootstrapClusterCreatorAdminPermissions: True
+                    }
                     nodes: {
                         count: nodeCount
                         instanceType: instanceType
@@ -223,26 +234,40 @@ if cloud == "gcp":
         }
     ]
 
-# Observability (always created)
-_items += [
-    observev1alpha1.XOss{
-        metadata: _metadata("XOss")
-        spec: {
-            parameters: {
-                deletionPolicy: deletionPolicy
-                id: id
-                operators: {
-                    prometheus: {
-                        version: prometheusVersion
+# Map cloud provider to cluster resource name
+_clusterResourceNames = {
+    "aws": "XEKS"
+    "azure": "XAKS"
+    "gcp": "XGKE"
+}
+_clusterResourceName = _clusterResourceNames[cloud]
+
+# Check if dependent resources already exist (safety checks to prevent uninstalling)
+_ossExists = "XOss" in _ocds
+_fluxExists = "XFlux" in _ocds
+_argoExists = "XArgo" in _ocds
+
+# Observability (created after cluster is ready, or if it already exists)
+if _isReady(_clusterResourceName) or _ossExists:
+    _items += [
+        observev1alpha1.XOss{
+            metadata: _metadata("XOss")
+            spec: {
+                parameters: {
+                    deletionPolicy: deletionPolicy
+                    id: id
+                    operators: {
+                        prometheus: {
+                            version: prometheusVersion
+                        }
                     }
                 }
             }
         }
-    }
-]
+    ]
 
-# Flux GitOps
-if gitopsOperator == "flux":
+# Flux GitOps (created after cluster is ready, or if it already exists)
+if gitopsOperator == "flux" and (_isReady(_clusterResourceName) or _fluxExists):
     _items += [
         gitopsv1alpha1.XFlux{
             metadata: _metadata("XFlux")
@@ -334,8 +359,8 @@ if gitopsOperator == "flux":
             }
         ]
 
-# ArgoCD GitOps
-if gitopsOperator == "argocd":
+# ArgoCD GitOps (created after cluster is ready, or if it already exists)
+if gitopsOperator == "argocd" and (_isReady(_clusterResourceName) or _argoExists):
     _items += [
         gitopsv1alpha1.XArgo{
             metadata: _metadata("XArgo")

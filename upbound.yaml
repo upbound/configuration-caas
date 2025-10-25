@@ -25,6 +25,10 @@ spec:
     version: v0.20.0
   - apiVersion: pkg.crossplane.io/v1
     kind: Configuration
+    package: xpkg.upbound.io/upbound/configuration-aws-lb-controller
+    version: v0.5.0
+  - apiVersion: pkg.crossplane.io/v1
+    kind: Configuration
     package: xpkg.upbound.io/upbound/configuration-azure-network
     version: v0.18.0
   - apiVersion: pkg.crossplane.io/v1

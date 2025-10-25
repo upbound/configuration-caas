@@ -12,12 +12,18 @@ _metadata = lambda name: str -> any {
     { annotations = { "krm.kcl.dev/composition-resource-name" = name }}
 }
 
-# Helper function to check if a resource is ready
-_isReady = lambda resourceName: str -> bool {
-    resource = _ocds?[resourceName]?.Resource
-    conditions = resource?.status?.conditions or []
-    all_true([c.status == "True" for c in conditions if c.type == "Ready"]) if len(conditions) > 0 else False
-}
+# Helper functions to check if resources are ready
+_eksReadyCondition = [condition for condition in (_ocds?["XEKS"]?.Resource?.status?.conditions or []) if condition.type == "Ready" and condition.status == "True"]
+_isEksReady = len(_eksReadyCondition) > 0
+
+_aksReadyCondition = [condition for condition in (_ocds?["XAKS"]?.Resource?.status?.conditions or []) if condition.type == "Ready" and condition.status == "True"]
+_isAksReady = len(_aksReadyCondition) > 0
+
+_gkeReadyCondition = [condition for condition in (_ocds?["XGKE"]?.Resource?.status?.conditions or []) if condition.type == "Ready" and condition.status == "True"]
+_isGkeReady = len(_gkeReadyCondition) > 0
+
+_lbControllerReadyCondition = [condition for condition in (_ocds?["XAWSLBController"]?.Resource?.status?.conditions or []) if condition.type == "Ready" and condition.status == "True"]
+_isLbControllerReady = len(_lbControllerReadyCondition) > 0
 
 # Extract parameters from XR
 cloud = oxr.spec.parameters.cloud
@@ -243,12 +249,102 @@ _clusterResourceNames = {
 _clusterResourceName = _clusterResourceNames[cloud]
 
 # Check if dependent resources already exist (safety checks to prevent uninstalling)
+_lbControllerExists = "XAWSLBController" in _ocds
 _ossExists = "XOss" in _ocds
 _fluxExists = "XFlux" in _ocds
 _argoExists = "XArgo" in _ocds
 
-# Observability (created after cluster is ready, or if it already exists)
-if _isReady(_clusterResourceName) or _ossExists:
+# For AWS: create XAWSLBController when XEKS is ready (to avoid webhook conflicts with Flux/OSS)
+# Also create if it already exists to prevent uninstalling
+if cloud == "aws" and (_isEksReady or _lbControllerExists):
+    _items += [
+        platformawsv1alpha1.XAWSLBController{
+            metadata: _metadata("XAWSLBController") | {
+                labels: {
+                    "platform.upbound.io/deletion-ordering": "enabled"
+                }
+            }
+            spec: {
+                parameters: {
+                    providerConfigName: providerConfigName
+                    deletionPolicy: deletionPolicy
+                    helm: {
+                        providerConfigName: id
+                    }
+                    region: region
+                    clusterNameSelector: {
+                        matchLabels: {
+                            "crossplane.io/composite": id
+                        }
+                    }
+                }
+            }
+        }
+    ]
+
+    # Usage resources for XAWSLBController
+    _items += [
+        apiextensionsv1alpha1.Usage{
+            metadata: _metadata("usageXEksByXAWSLBController")
+            spec: {
+                of: {
+                    apiVersion: "aws.platform.upbound.io/v1alpha1"
+                    kind: "XEKS"
+                    resourceSelector: {
+                        matchControllerRef: True
+                    }
+                }
+                by: {
+                    apiVersion: "aws.platform.upbound.io/v1alpha1"
+                    kind: "XAWSLBController"
+                    resourceSelector: {
+                        matchControllerRef: True
+                    }
+                }
+            }
+        }
+        # Ensure XOss is deleted before XAWSLBController (if XOss exists)
+        apiextensionsv1alpha1.Usage{
+            metadata: _metadata("usageXAWSLBControllerByXOss") | {
+                annotations: {
+                    "krm.kcl.dev/ready": "True"
+                }
+            }
+            spec: {
+                replayDeletion: True
+                of: {
+                    apiVersion: "aws.platform.upbound.io/v1alpha1"
+                    kind: "XAWSLBController"
+                    resourceSelector: {
+                        matchControllerRef: True
+                    }
+                }
+                by: {
+                    apiVersion: "observe.platform.upbound.io/v1alpha1"
+                    kind: "XOss"
+                    resourceSelector: {
+                        matchControllerRef: True
+                    }
+                }
+            }
+        }
+    ]
+
+# Determine readiness check for creating XOss and GitOps resources
+# For AWS: wait for LB Controller to be ready (to avoid webhook conflicts)
+# For Azure/GCP: wait for cluster to be ready
+_readyForHelm = False
+if cloud == "aws":
+    _readyForHelm = _isLbControllerReady
+elif cloud == "azure":
+    _readyForHelm = _isAksReady
+elif cloud == "gcp":
+    _readyForHelm = _isGkeReady
+
+# Observability (created after prerequisites are ready, or if it already exists)
+# For AWS: waits for XAWSLBController to avoid webhook conflicts
+# For Azure/GCP: waits for cluster to be ready
+if _readyForHelm or _ossExists:
     _items += [
         observev1alpha1.XOss{
             metadata: _metadata("XOss")
@@ -266,8 +362,10 @@ if _isReady(_clusterResourceName) or _ossExists:
         }
     ]
 
-# Flux GitOps (created after cluster is ready, or if it already exists)
-if gitopsOperator == "flux" and (_isReady(_clusterResourceName) or _fluxExists):
+# Flux GitOps (created after prerequisites are ready, or if it already exists)
+# For AWS: waits for XAWSLBController to avoid webhook conflicts
+# For Azure/GCP: waits for cluster to be ready
+if gitopsOperator == "flux" and (_readyForHelm or _fluxExists):
     _items += [
         gitopsv1alpha1.XFlux{
             metadata: _metadata("XFlux")
@@ -300,6 +398,31 @@ if gitopsOperator == "flux" and (_isReady(_clusterResourceName) or _fluxExists):
                     of: {
                         apiVersion: "aws.platform.upbound.io/v1alpha1"
                         kind: "XEKS"
+                        resourceSelector: {
+                            matchControllerRef: True
+                        }
+                    }
+                    by: {
+                        apiVersion: "gitops.platform.upbound.io/v1alpha1"
+                        kind: "XFlux"
+                        resourceSelector: {
+                            matchControllerRef: True
+                        }
+                    }
+                }
+            }
+            # Ensure XFlux is deleted before XAWSLBController
+            apiextensionsv1alpha1.Usage{
+                metadata: _metadata("usageXAWSLBControllerByXFlux") | {
+                    annotations: {
+                        "krm.kcl.dev/ready": "True"
+                    }
+                }
+                spec: {
+                    replayDeletion: True
+                    of: {
+                        apiVersion: "aws.platform.upbound.io/v1alpha1"
+                        kind: "XAWSLBController"
                         resourceSelector: {
                             matchControllerRef: True
                         }
@@ -359,8 +482,10 @@ if gitopsOperator == "flux" and (_isReady(_clusterResourceName) or _fluxExists):
             }
         ]
 
-# ArgoCD GitOps (created after cluster is ready, or if it already exists)
-if gitopsOperator == "argocd" and (_isReady(_clusterResourceName) or _argoExists):
+# ArgoCD GitOps (created after prerequisites are ready, or if it already exists)
+# For AWS: waits for XAWSLBController to avoid webhook conflicts
+# For Azure/GCP: waits for cluster to be ready
+if gitopsOperator == "argocd" and (_readyForHelm or _argoExists):
     _items += [
         gitopsv1alpha1.XArgo{
             metadata: _metadata("XArgo")
@@ -396,6 +521,31 @@ if gitopsOperator == "argocd" and (_isReady(_clusterResourceName) or _argoExists
                     of: {
                         apiVersion: "aws.platform.upbound.io/v1alpha1"
                         kind: "XEKS"
+                        resourceSelector: {
+                            matchControllerRef: True
+                        }
+                    }
+                    by: {
+                        apiVersion: "gitops.platform.upbound.io/v1alpha1"
+                        kind: "XArgo"
+                        resourceSelector: {
+                            matchControllerRef: True
+                        }
+                    }
+                }
+            }
+            # Ensure XArgo is deleted before XAWSLBController
+            apiextensionsv1alpha1.Usage{
+                metadata: _metadata("usageXAWSLBControllerByXArgo") | {
+                    annotations: {
+                        "krm.kcl.dev/ready": "True"
+                    }
+                }
+                spec: {
+                    replayDeletion: True
+                    of: {
+                        apiVersion: "aws.platform.upbound.io/v1alpha1"
+                        kind: "XAWSLBController"
                         resourceSelector: {
                             matchControllerRef: True
                         }

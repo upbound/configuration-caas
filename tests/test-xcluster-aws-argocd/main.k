@@ -109,6 +109,58 @@ _items = [
                         }
                     }
                 }
+                platformawsv1alpha1.XAWSLBController{
+                    metadata = {
+                        labels = {
+                            "crossplane.io/composite" = "caas-aws-argocd"
+                            "platform.upbound.io/deletion-ordering" = "enabled"
+                        }
+                        annotations = {
+                            "crossplane.io/composition-resource-name" = "XAWSLBController"
+                        }
+                    }
+                    spec = {
+                        parameters = {
+                            providerConfigName = "default"
+                            deletionPolicy = "Delete"
+                            helm = {
+                                providerConfigName = "caas-aws-argocd"
+                            }
+                            region = "us-west-2"
+                            clusterNameSelector = {
+                                matchLabels = {
+                                    "crossplane.io/composite" = "caas-aws-argocd"
+                                }
+                            }
+                        }
+                    }
+                }
+                crossplaneapiextensionsv1alpha1.Usage{
+                    metadata = {
+                        labels = {
+                            "crossplane.io/composite" = "caas-aws-argocd"
+                        }
+                        annotations = {
+                            "crossplane.io/composition-resource-name" = "usageXEksByXAWSLBController"
+                        }
+                    }
+                    spec = {
+                        of = {
+                            apiVersion = "aws.platform.upbound.io/v1alpha1"
+                            kind = "XEKS"
+                            resourceSelector = {
+                                matchControllerRef = True
+                            }
+                        }
+                        by = {
+                            apiVersion = "aws.platform.upbound.io/v1alpha1"
+                            kind = "XAWSLBController"
+                            resourceSelector = {
+                                matchControllerRef = True
+                            }
+                        }
+                    }
+                }
                 crossplaneapiextensionsv1alpha1.Usage{
                     metadata = {
                         labels = {
@@ -213,6 +265,60 @@ _items = [
                         }
                     }
                 }
+                crossplaneapiextensionsv1alpha1.Usage{
+                    metadata = {
+                        labels = {
+                            "crossplane.io/composite" = "caas-aws-argocd"
+                        }
+                        annotations = {
+                            "crossplane.io/composition-resource-name" = "usageXAWSLBControllerByXArgo"
+                        }
+                    }
+                    spec = {
+                        replayDeletion = True
+                        of = {
+                            apiVersion = "aws.platform.upbound.io/v1alpha1"
+                            kind = "XAWSLBController"
+                            resourceSelector = {
+                                matchControllerRef = True
+                            }
+                        }
+                        by = {
+                            apiVersion = "gitops.platform.upbound.io/v1alpha1"
+                            kind = "XArgo"
+                            resourceSelector = {
+                                matchControllerRef = True
+                            }
+                        }
+                    }
+                }
+                crossplaneapiextensionsv1alpha1.Usage{
+                    metadata = {
+                        labels = {
+                            "crossplane.io/composite" = "caas-aws-argocd"
+                        }
+                        annotations = {
+                            "crossplane.io/composition-resource-name" = "usageXAWSLBControllerByXOss"
+                        }
+                    }
+                    spec = {
+                        replayDeletion = True
+                        of = {
+                            apiVersion = "aws.platform.upbound.io/v1alpha1"
+                            kind = "XAWSLBController"
+                            resourceSelector = {
+                                matchControllerRef = True
+                            }
+                        }
+                        by = {
+                            apiVersion = "observe.platform.upbound.io/v1alpha1"
+                            kind = "XOss"
+                            resourceSelector = {
+                                matchControllerRef = True
+                            }
+                        }
+                    }
+                }
             ]
             observedResources: [
                 platformawsv1alpha1.XEKS{
@@ -233,6 +339,36 @@ _items = [
                             nodes = {
                                 count = 3
                                 instanceType = "t3.small"
+                            }
+                        }
+                    }
+                    status = {
+                        conditions = [
+                            {
+                                type: "Ready"
+                                status: "True"
+                                reason: "Available"
+                                lastTransitionTime: "2024-01-01T00:00:00Z"
+                            }
+                        ]
+                    }
+                }
+                platformawsv1alpha1.XAWSLBController{
+                    metadata.annotations = {
+                        "crossplane.io/composition-resource-name": "XAWSLBController"
+                    }
+                    spec = {
+                        parameters = {
+                            providerConfigName = "default"
+                            deletionPolicy = "Delete"
+                            helm = {
+                                providerConfigName = "caas-aws-argocd"
+                            }
+                            region = "us-west-2"
+                            clusterNameSelector = {
+                                matchLabels = {
+                                    "crossplane.io/composite" = "caas-aws-argocd"
+                                }
                             }
                         }
                     }

@@ -68,6 +68,7 @@ if cloud == "aws":
             metadata: _metadata("XEKS") | {
                 labels: {
                     "xeks.aws.platform.upbound.io/cluster-id": id
+                    "platform.upbound.io/deletion-ordering": "enabled"
                 }
                 annotations: {
                     "crossplane.io/external-name": id
@@ -254,6 +255,9 @@ _ossExists = "XOss" in _ocds
 _fluxExists = "XFlux" in _ocds
 _argoExists = "XArgo" in _ocds
 
+# Get VPC ID from observed XNetwork status (needed for AWS LB Controller)
+_observedVpcId = _ocds?["XNetworkAWS"]?.Resource?.status?.vpcId
+
 # For AWS: create XAWSLBController when XEKS is ready (to avoid webhook conflicts with Flux/OSS)
 # Also create if it already exists to prevent uninstalling
 if cloud == "aws" and (_isEksReady or _lbControllerExists):
@@ -277,6 +281,9 @@ if cloud == "aws" and (_isEksReady or _lbControllerExists):
                             "crossplane.io/composite": id
                         }
                     }
+                    # Pass VPC ID if available to avoid EC2 metadata discovery
+                    if _observedVpcId:
+                        vpcId = _observedVpcId
                 }
             }
         }

@@ -79,6 +79,7 @@ _items = [
                         labels = {
                             "crossplane.io/composite" = "caas-aws-flux"
                             "xeks.aws.platform.upbound.io/cluster-id" = "caas-aws-flux"
+                            "platform.upbound.io/deletion-ordering" = "enabled"
                         }
                         annotations = {
                             "crossplane.io/external-name" = "caas-aws-flux"
@@ -128,6 +129,7 @@ _items = [
                                 providerConfigName = "caas-aws-flux"
                             }
                             region = "us-west-2"
+                            vpcId = "vpc-12345678"
                             clusterNameSelector = {
                                 matchLabels = {
                                     "crossplane.io/composite" = "caas-aws-flux"
@@ -323,6 +325,30 @@ _items = [
                 }
             ]
             observedResources: [
+                platformawsv1alpha1.XNetwork{
+                    metadata.annotations = {
+                        "crossplane.io/composition-resource-name": "XNetworkAWS"
+                    }
+                    spec = {
+                        parameters = {
+                            id = "caas-aws-flux"
+                            region = "us-west-2"
+                            deletionPolicy = "Delete"
+                            providerConfigName = "default"
+                        }
+                    }
+                    status = {
+                        vpcId = "vpc-12345678"
+                        conditions = [
+                            {
+                                type: "Ready"
+                                status: "True"
+                                reason: "Available"
+                                lastTransitionTime: "2024-01-01T00:00:00Z"
+                            }
+                        ]
+                    }
+                }
                 platformawsv1alpha1.XEKS{
                     metadata.annotations = {
                         "crossplane.io/composition-resource-name": "XEKS"

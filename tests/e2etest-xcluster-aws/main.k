@@ -26,7 +26,7 @@ _items = [
                                 roleArn = "arn:aws:iam::609897127049:role/solutions-e2e-provider-aws"
                             }
                             nodes = {
-                                count = 1
+                                count = 3 # count 3 to fit in larger number of pods
                                 instanceType = "t3.small"
                             }
                             gitops = {

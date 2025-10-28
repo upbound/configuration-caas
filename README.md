@@ -52,28 +52,33 @@ The [XConnector](apis/upbound/mcp-connector/definition.yaml) API installs mcp-co
 - Configurable connector version
 - Namespace and cluster identification
 
+### Architecture Overview
+
 ```mermaid
 graph LR;
-    MyApp(My App)---MyCluster(XRC: my-cluster);
-    MyCluster---XRD1(XRD: XCluster);
-    MyMCP(XRC: my-mcp)---XRD2(XRD: XControlPlane);
-    MyConnector(XRC: my-connector)---XRD3(XRD: XConnector);
-    subgraph Configuration:upbound/configuration-caas;
-        XRD1---Composition1(XEKS/XAKS/XGKE, XNetwork, XAWSLBController, XFlux/XArgo, XOss);
-        XRD2---Composition2(Robot, Team, Token, ControlPlane, ObjectRoleBinding);
-        XRD3---Composition3(Helm Release: mcp-connector);
+    subgraph Configuration["Configuration: upbound/configuration-caas"]
+        XRD1["XRD: XCluster"]
+        XRD2["XRD: XControlPlane"]
+        XRD3["XRD: XConnector"]
+        Composition1["XEKS/XAKS/XGKE,<br/>XNetwork,<br/>XAWSLBController,<br/>XFlux/XArgo, XOss"]
+        Composition2["Robot, Team, Token,<br/>ControlPlane,<br/>ObjectRoleBinding"]
+        Composition3["Helm Release:<br/>mcp-connector"]
+
+        XRD1---Composition1
+        XRD2---Composition2
+        XRD3---Composition3
     end
     subgraph Providers
-        Composition1---Cloud.MRs(MRs: EKS/AKS/GKE, VPC/VNet, IAM);
-        Composition2---Upbound.MRs(MRs: Robot, Team, Token, K8s Objects);
-        Composition3---Helm.MRs(MRs: Helm Release);
+        Cloud.MRs["MRs: EKS/AKS/GKE,<br/>VPC/VNet, IAM"]
+        Upbound.MRs["MRs: Robot, Team,<br/>Token, K8s Objects"]
+        Helm.MRs["MRs: Helm Release"]
+
+        Composition1---Cloud.MRs
+        Composition2---Upbound.MRs
+        Composition3---Helm.MRs
     end
 
-style MyApp color:#000,fill:#e6e6e6,stroke:#000,stroke-width:2px
-style MyCluster color:#000,fill:#D68A82,stroke:#000,stroke-width:2px
-style MyMCP color:#000,fill:#D68A82,stroke:#000,stroke-width:2px
-style MyConnector color:#000,fill:#D68A82,stroke:#000,stroke-width:2px
-style Configuration:upbound/configuration-caas fill:#f1d16d,opacity:0.3
+style Configuration fill:#f5f5dc,opacity:0.3
 style Providers fill:#81CABB,opacity:0.3
 style XRD1 color:#000,fill:#f1d16d,stroke:#000,stroke-width:2px,stroke-dasharray: 5 5
 style XRD2 color:#000,fill:#f1d16d,stroke:#000,stroke-width:2px,stroke-dasharray: 5 5
@@ -84,6 +89,33 @@ style Composition3 color:#000,fill:#f1d16d,stroke:#000,stroke-width:2px
 style Cloud.MRs color:#000,fill:#81CABB,stroke:#000,stroke-width:2px
 style Upbound.MRs color:#000,fill:#81CABB,stroke:#000,stroke-width:2px
 style Helm.MRs color:#000,fill:#81CABB,stroke:#000,stroke-width:2px
+```
+
+### API Connection Workflow
+
+```mermaid
+graph TD;
+    subgraph Configuration["Configuration: upbound/configuration-caas"]
+        XRD2["XRD: XControlPlane"]
+        XRD1["XRD: XCluster"]
+        XRD3["XRD: XConnector"]
+    end
+
+    XRD2 -->|"1. Creates MCP + Token<br/>(connection secret)"| Secret["Connection Secret<br/>kubeconfig + token"]
+    XRD1 -->|"2. Creates Cluster<br/>(ProviderConfig)"| PC["ProviderConfig<br/>(helm access)"]
+
+    Secret -->|"tokenSecretRef"| XRD3
+    PC -->|"providerConfigName"| XRD3
+
+    XRD3 -->|"3. Installs mcp-connector<br/>Connects cluster to MCP"| Result["Connected Cluster"]
+
+style Configuration fill:#f5f5dc,opacity:0.3
+style XRD1 color:#000,fill:#fff,stroke:#000,stroke-width:2px,stroke-dasharray: 5 5
+style XRD2 color:#000,fill:#fff,stroke:#000,stroke-width:2px,stroke-dasharray: 5 5
+style XRD3 color:#000,fill:#fff,stroke:#000,stroke-width:2px,stroke-dasharray: 5 5
+style Secret color:#000,fill:#e6e6e6,stroke:#000,stroke-width:1px
+style PC color:#000,fill:#e6e6e6,stroke:#000,stroke-width:1px
+style Result color:#000,fill:#d4edda,stroke:#000,stroke-width:1px
 ```
 
 Learn more about Composite Resources in the [Crossplane

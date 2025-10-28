@@ -3,6 +3,7 @@ import models.io.upbound.caas.mcp.v1alpha1 as caasmcpv1alpha1
 import models.io.upbound.iam.v1alpha1 as iamv1alpha1
 import models.io.upbound.v1alpha1 as upboundv1alpha1
 import models.io.crossplane.kubernetes.v1alpha2 as kubernetesv1alpha2
+import models.io.crossplane.kubernetes.v1alpha1 as kubernetesv1alpha1
 
 _items = [
     metav1alpha1.CompositionTest {
@@ -16,6 +17,8 @@ _items = [
                     spec = {
                         parameters = {
                             organizationName = "upbound"
+                            spaceHost = "upbound-gcp-us-central-1.space.mxe.upbound.io"
+                            groupName = "test-group"
                             configuration = "caas-test"
                             robotPermission = "owner"
                         }
@@ -47,21 +50,34 @@ _items = [
                         organization = "upbound"
                     }
                 }
-                caasmcpv1alpha1.ControlPlane{
+                kubernetesv1alpha2.Object{
                     metadata = {
+                        name = "caas-ctp"
                         labels = {
                             "crossplane.io/composite" = "caas"
                         }
                         annotations = {
-                            "crossplane.io/external-name" = "caas"
                             "crossplane.io/composition-resource-name" = "controlplane"
                         }
                     }
                     spec = {
-                        parameters = {
-                            organizationName = "upbound"
-                            configuration = "caas-test"
-                            robotPermission = "owner"
+                        forProvider = {
+                            manifest = {
+                                apiVersion = "spaces.upbound.io/v1beta1"
+                                kind = "ControlPlane"
+                                metadata = {
+                                    name = "caas"
+                                    namespace = "test-group"
+                                }
+                                spec = {
+                                    writeConnectionSecretToRef = {
+                                        name = "caas-kubeconfig"
+                                    }
+                                }
+                            }
+                        }
+                        providerConfigRef = {
+                            name = "test-group-group"
                         }
                     }
                 }
@@ -177,25 +193,26 @@ _items = [
                                 kind = "ObjectRoleBinding"
                                 metadata = {
                                     name = "caas-admin-binding"
-                                    namespace = "caas"
+                                    namespace = "test-group"
                                 }
                                 spec = {
                                     object = {
                                         apiGroup = "core"
                                         resource = "namespaces"
-                                        name = "caas"
+                                        name = "test-group"
                                     }
                                     subjects = [
                                         {
                                             kind = "UpboundTeam"
                                             role = "owner"
+                                            name = "team-external-id-456"
                                         }
                                     ]
                                 }
                             }
                         }
                         providerConfigRef = {
-                            name = "caas"
+                            name = "test-group-group"
                         }
                     }
                 }

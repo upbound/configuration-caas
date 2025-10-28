@@ -5,6 +5,8 @@ metadata:
 spec:
   parameters:
     organizationName: upbound
+    spaceHost: upbound-gcp-us-central-1.space.mxe.upbound.io
+    groupName: test-group
     configuration: caas-test
     robotPermission: owner
   writeConnectionSecretToRef:

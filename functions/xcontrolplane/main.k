@@ -3,27 +3,33 @@ import models.io.upbound.iam.v1alpha1 as iamv1alpha1
 import models.io.upbound.v1alpha1 as upboundv1alpha1
 import models.io.crossplane.kubernetes.v1alpha2 as kubernetesv1alpha2
 
+import pKubernetesHelper
+import utils
+
 oxr = option("params").oxr
 _ocds = option("params").ocds
-
-_metadata = lambda name: str -> any {
-    { annotations = { "krm.kcl.dev/composition-resource-name" = name }}
-}
 
 # Extract parameters from XR
 controlPlaneName = oxr.metadata.name
 organizationName = oxr.spec.parameters.organizationName
+# Upbound Space host (e.g., upbound-gcp-us-central-1.space.mxe.upbound.io)
+spaceHost = oxr.spec.parameters.spaceHost
+# Group (namespace) where the ControlPlane will be created
+groupName = oxr.spec.parameters.groupName
 configuration = oxr.spec.parameters.configuration
 robotPermission = oxr.spec.parameters.robotPermission
 upboundTokenSecretName = oxr.spec?.parameters?.upboundTokenSecretName or "upbound-token"
 upboundTokenSecretNamespace = oxr.spec?.parameters?.upboundTokenSecretNamespace or "upbound-system"
 upboundTokenSecretKey = oxr.spec?.parameters?.upboundTokenSecretKey or "token"
+# Bootstrap provider-kubernetes ProviderConfig (must exist in the control plane)
+# This is used to create the kubeconfig Secret, then we create a new ProviderConfig
+bootstrapProviderConfigName = oxr.spec?.parameters?.bootstrapProviderConfigName or "default"
 
 # Computed names
 robotName = "{}-robot".format(controlPlaneName)
 teamName = "{}-team".format(controlPlaneName)
 tokenSecretName = "{}-robot-token".format(controlPlaneName)
-providerConfigName = "{}-upbound".format(controlPlaneName)
+providerConfigNameUpbound = "{}-upbound".format(controlPlaneName)
 
 # Get status values from observed composed resources
 teamExternalName = _ocds?["mcp-team"]?.Resource?.metadata?.annotations?["crossplane.io/external-name"]
@@ -34,11 +40,12 @@ connectionSecretName = "{}-connection-details".format(controlPlaneName)
 _items = [
     # ProviderConfig for provider-upbound using the supplied token
     upboundv1alpha1.ProviderConfig{
-        metadata: _metadata("providerConfigUpbound") | {
+        metadata: {
             annotations: {
+                "krm.kcl.dev/composition-resource-name": "providerConfigUpbound"
                 "krm.kcl.dev/ready": "True"
             }
-            name: providerConfigName
+            name: providerConfigNameUpbound
         }
         spec: {
             credentials: {
@@ -52,24 +59,35 @@ _items = [
             organization: organizationName
         }
     }
-    # ControlPlane XR (the actual MCP)
-    caasmcpv1alpha1.ControlPlane{
-        metadata: _metadata("controlplane") | {
-            annotations: {
-                "crossplane.io/external-name": controlPlaneName
-            }
+    # ControlPlane in Upbound Spaces (the actual MCP)
+    kubernetesv1alpha2.Object{
+        metadata: utils._metadata("controlplane") | {
+            name: "{}-ctp".format(controlPlaneName)
         }
         spec: {
-            parameters: {
-                organizationName: organizationName
-                configuration: configuration
-                robotPermission: robotPermission
+            forProvider: {
+                manifest: {
+                    apiVersion: "spaces.upbound.io/v1beta1"
+                    kind: "ControlPlane"
+                    metadata: {
+                        name: controlPlaneName
+                        namespace: groupName
+                    }
+                    spec: {
+                        writeConnectionSecretToRef: {
+                            name: "{}-kubeconfig".format(controlPlaneName)
+                        }
+                    }
+                }
+            }
+            providerConfigRef: {
+                name: "{}-group".format(groupName)
             }
         }
     }
     # Robot for the control plane
     iamv1alpha1.Robot{
-        metadata: _metadata("mcp-robot") | {
+        metadata: utils._metadata("mcp-robot") | {
             name: robotName
         }
         spec: {
@@ -81,13 +99,13 @@ _items = [
                 description: "Robot for {}".format(controlPlaneName)
             }
             providerConfigRef: {
-                name: providerConfigName
+                name: providerConfigNameUpbound
             }
         }
     }
     # Robot Token
     iamv1alpha1.Token{
-        metadata: _metadata("mcp-robot-token") | {
+        metadata: utils._metadata("mcp-robot-token") | {
             name: tokenSecretName
         }
         spec: {
@@ -101,7 +119,7 @@ _items = [
                 }
             }
             providerConfigRef: {
-                name: providerConfigName
+                name: providerConfigNameUpbound
             }
             writeConnectionSecretToRef: {
                 name: tokenSecretName
@@ -111,7 +129,7 @@ _items = [
     }
     # Team
     iamv1alpha1.Team{
-        metadata: _metadata("mcp-team") | {
+        metadata: utils._metadata("mcp-team") | {
             name: teamName
         }
         spec: {
@@ -121,13 +139,13 @@ _items = [
                 name: teamName
             }
             providerConfigRef: {
-                name: providerConfigName
+                name: providerConfigNameUpbound
             }
         }
     }
     # Robot team membership
     iamv1alpha1.RobotTeamMembership{
-        metadata: _metadata("mcp-team-membership") | {
+        metadata: utils._metadata("mcp-team-membership") | {
             name: "{}-membership".format(robotName)
         }
         spec: {
@@ -140,46 +158,64 @@ _items = [
                 }
             }
             providerConfigRef: {
-                name: providerConfigName
-            }
-        }
-    }
-    # ObjectRoleBinding for admin access to the control plane namespace
-    kubernetesv1alpha2.Object{
-        metadata: _metadata("team-admin-binding") | {
-            name: "{}-admin-binding".format(controlPlaneName)
-        }
-        spec: {
-            forProvider: {
-                manifest: {
-                    apiVersion: "authorization.spaces.upbound.io/v1alpha1"
-                    kind: "ObjectRoleBinding"
-                    metadata: {
-                        name: "{}-admin-binding".format(controlPlaneName)
-                        namespace: controlPlaneName
-                    }
-                    spec: {
-                        object: {
-                            apiGroup: "core"
-                            resource: "namespaces"
-                            name: controlPlaneName
-                        }
-                        subjects: [
-                            {
-                                kind: "UpboundTeam"
-                                role: robotPermission
-                                **({name: teamExternalName} if teamExternalName else {})
-                            }
-                        ]
-                    }
-                }
-            }
-            providerConfigRef: {
-                name: controlPlaneName
+                name: providerConfigNameUpbound
             }
         }
     }
 ]
+
+# ObjectRoleBinding for team access to the group namespace
+# Only create when team external name is available from the observed Team resource
+if teamExternalName:
+    _items += [
+        kubernetesv1alpha2.Object{
+            metadata: utils._metadata("team-admin-binding") | {
+                name: "{}-admin-binding".format(controlPlaneName)
+            }
+            spec: {
+                forProvider: {
+                    manifest: {
+                        apiVersion: "authorization.spaces.upbound.io/v1alpha1"
+                        kind: "ObjectRoleBinding"
+                        metadata: {
+                            name: "{}-admin-binding".format(controlPlaneName)
+                            namespace: groupName
+                        }
+                        spec: {
+                            object: {
+                                apiGroup: "core"
+                                resource: "namespaces"
+                                name: groupName
+                            }
+                            subjects: [
+                                {
+                                    kind: "UpboundTeam"
+                                    role: robotPermission
+                                    name: teamExternalName
+                                }
+                            ]
+                        }
+                    }
+                }
+                providerConfigRef: {
+                    name: "{}-group".format(groupName)
+                }
+            }
+        }
+    ]
+
+# Use pKubernetesHelper to create group-level provider config (for creating control planes and managing access in the group)
+_items += pKubernetesHelper.upboundProviderConfig(pKubernetesHelper.UpboundProviderConfigInput{
+    spaceHost = spaceHost
+    org = organizationName
+    group = groupName
+    providerConfigName = bootstrapProviderConfigName
+    upboundTokenSecretRef = pKubernetesHelper.UpboundTokenSecretRef{
+        name = upboundTokenSecretName
+        namespace = upboundTokenSecretNamespace
+        key = upboundTokenSecretKey
+    }
+})
 
 # Status updates - add to desired composite resource status
 _dxr = {
@@ -195,12 +231,16 @@ _dxr = {
     }
 }
 
-# Connection details for kubeconfig come from the ControlPlane XR
+# Connection details for kubeconfig
+# The ControlPlane writes its kubeconfig to a secret in Upbound Spaces
+# We'll need to observe that secret to extract the kubeconfig
+# For now, marking this as a placeholder for kubeconfig propagation
+_kubeconfigSecretData = _ocds?.controlplane?.Resource?.status?.atProvider?.manifest?.data?.kubeconfig
 _items += [{
     apiVersion: "meta.krm.kcl.dev/v1alpha1"
     kind: "CompositeConnectionDetails"
     data: {
-        kubeconfig: _ocds?.controlplane?.ConnectionDetails?.kubeconfig
+        **({kubeconfig: _kubeconfigSecretData} if _kubeconfigSecretData else {})
     }
 }]
 

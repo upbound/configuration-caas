@@ -231,16 +231,17 @@ _dxr = {
     }
 }
 
-# Connection details for kubeconfig
+# Connection details for kubeconfig and token
 # The ControlPlane writes its kubeconfig to a secret in Upbound Spaces
-# We'll need to observe that secret to extract the kubeconfig
-# For now, marking this as a placeholder for kubeconfig propagation
+# The Token writes the robot token to its connection secret
 _kubeconfigSecretData = _ocds?.controlplane?.Resource?.status?.atProvider?.manifest?.data?.kubeconfig
+_tokenData = _ocds?["mcp-robot-token"]?.ConnectionDetails?.token
 _items += [{
     apiVersion: "meta.krm.kcl.dev/v1alpha1"
     kind: "CompositeConnectionDetails"
     data: {
         **({kubeconfig: _kubeconfigSecretData} if _kubeconfigSecretData else {})
+        **({token: _tokenData} if _tokenData else {})
     }
 }]
 

@@ -18,6 +18,10 @@ _items = [
                             version = "0.3.5"
                             providerConfigName = "caas-aws-flux"
                             deletionPolicy = "Delete"
+                            tokenSecretRef = {
+                                name = "caas-kubeconfig"
+                                namespace = "upbound-system"
+                            }
                         }
                     }
                 }
@@ -48,7 +52,7 @@ _items = [
                                     secretKeyRef = {
                                         key = "token"
                                         namespace = "upbound-system"
-                                        name = "caas-connection-details"
+                                        name = "caas-kubeconfig"
                                         optional = False
                                     }
                                 }

@@ -12,6 +12,7 @@ spec:
     plural: controlplanes
   connectionSecretKeys:
     - kubeconfig
+    - token
   versions:
     - name: v1alpha1
       served: true

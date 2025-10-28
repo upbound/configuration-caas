@@ -13,13 +13,15 @@ deletionPolicy = oxr.spec.parameters.deletionPolicy
 version = oxr.spec.parameters.version
 organizationName = oxr.spec.parameters.organizationName
 controlPlaneName = oxr.spec.parameters.controlPlaneName
+tokenSecretRef = oxr.spec.parameters.tokenSecretRef
 # Use XR name for namespace
 clusterName = oxr.metadata.name
 
 # Computed values
 chartUrl = "https://charts.upbound.io/beta/mcp-connector-{}.tgz".format(version)
 imageTag = "v{}".format(version)
-connectionSecretName = "{}-connection-details".format(controlPlaneName)
+tokenSecretName = tokenSecretRef.name
+tokenSecretNamespace = tokenSecretRef.namespace
 
 _items = [
     helmv1beta1.Release{
@@ -44,8 +46,8 @@ _items = [
                     valueFrom: {
                         secretKeyRef: {
                             key: "token"
-                            namespace: "upbound-system"
-                            name: connectionSecretName
+                            namespace: tokenSecretNamespace
+                            name: tokenSecretName
                             optional: False
                         }
                     }

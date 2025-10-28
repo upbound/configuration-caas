@@ -46,11 +46,25 @@ spec:
                     controlPlaneName:
                       type: string
                       description: ControlPlaneName is the name of the mcp controlplane to connect a spoke cluster.
+                    tokenSecretRef:
+                      type: object
+                      description: Reference to the secret containing the MCP robot token (from XControlPlane's writeConnectionSecretToRef)
+                      properties:
+                        name:
+                          type: string
+                          description: Name of the secret containing the token
+                        namespace:
+                          type: string
+                          description: Namespace of the secret
+                          default: upbound-system
+                      required:
+                        - name
                   required:
                     - controlPlaneName
                     - deletionPolicy
                     - organizationName
                     - providerConfigName
+                    - tokenSecretRef
                     - version
               required:
                 - parameters

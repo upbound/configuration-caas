@@ -1,0 +1,14 @@
+apiVersion: mcp.caas.upbound.io/v1alpha1
+kind: XConnector
+metadata:
+  name: caas-aws-flux
+spec:
+  parameters:
+    organizationName: upbound
+    controlPlaneName: caas
+    version: "0.3.5"
+    providerConfigName: caas-aws-flux
+    deletionPolicy: Delete
+    tokenSecretRef:
+      name: caas-kubeconfig
+      namespace: upbound-system

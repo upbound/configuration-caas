@@ -12,6 +12,7 @@ spec:
     plural: controlplanes
   connectionSecretKeys:
     - kubeconfig
+    - token
   versions:
     - name: v1alpha1
       served: true
@@ -30,14 +31,38 @@ spec:
                     organizationName:
                       type: string
                       description: OrganizationName is the name of the organization to which the control plane belongs
+                    spaceHost:
+                      type: string
+                      description: Upbound Space host (e.g., upbound-gcp-us-central-1.space.mxe.upbound.io)
+                    groupName:
+                      type: string
+                      description: GroupName is the name of the group (namespace) where the control plane will be created
                     configuration:
                       type: string
                       description: Configuration is the name of the predefined configuration.
                     robotPermission:
                       type: string
                       description: Robot Permission for ControlPlane
+                    upboundTokenSecretName:
+                      type: string
+                      description: Name of secret containing Upbound API token
+                      default: upbound-token
+                    upboundTokenSecretNamespace:
+                      type: string
+                      description: Namespace of secret containing Upbound API token
+                      default: upbound-system
+                    upboundTokenSecretKey:
+                      type: string
+                      description: Key in secret containing Upbound API token
+                      default: token
+                    bootstrapProviderConfigName:
+                      type: string
+                      description: Name of existing provider-kubernetes ProviderConfig to use for bootstrapping (defaults to default)
+                      default: default
                   required:
                     - organizationName
+                    - spaceHost
+                    - groupName
                     - configuration
                     - robotPermission
               required:

@@ -1,0 +1,31 @@
+apiVersion: caas.upbound.io/v1alpha1
+kind: XCluster
+metadata:
+  name: caas-azure-flux
+spec:
+  parameters:
+    cloud: azure
+    id: caas-azure-flux
+    region: eastus
+    version: "1.31"
+    deletionPolicy: Delete
+    providerConfigName: default
+    nodes:
+      count: 3
+      instanceType: Standard_B2s
+    gitops:
+      operator: flux
+      git:
+        url: https://github.com/upbound/configuration-caas/
+        ref:
+          name: refs/heads/main
+    operators:
+      prometheus:
+        version: "67.4.0"
+      flux:
+        version: "2.16.4"
+      fluxSync:
+        version: "1.13.4"
+  writeConnectionSecretToRef:
+    name: caas-azure-flux-kubeconfig
+    namespace: upbound-system

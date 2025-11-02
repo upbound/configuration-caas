@@ -1,68 +1,363 @@
-# Cluster-as-a-Service base configuration
+# Cluster-as-a-Service Configuration
 
-This repo provides a configuration for a Cluster-as-a-Service, built on top of
-Crossplane. This configuration exposes a simple API to your internal developers
-for creating Kubernetes clusters. In the background, this configuration can create clusters in AWS, Azure, and GCP. It automatically applies common recommended practices, such as connecting the cluster to existing Flux or ArogCD deployments, automating VPC setup, and creating a Flux or ArgoCD operator in a cluster.
+This repository contains a multi-cloud Cluster-as-a-Service Platform Configuration for
+[Crossplane](https://crossplane.io/) built with [Upbound DevEx](https://docs.upbound.io/devex/). It's a great starting point for building
+internal cloud platforms that span AWS, Azure, and GCP, and offer a self-service API to your internal
+development teams.
 
-This repo is a starting point for you to deliver your own
-Cluster-as-a-Service. Fork this repository and customize the configuration to
-meet your teams' needs.
+This platform offers APIs for setting up fully configured Kubernetes clusters (EKS, AKS, GKE)
+with secure networking, GitOps integration (Flux or ArgoCD), observability stacks, and
+Upbound Managed Control Planes with mcp-connector for cluster management. All components are built using
+cloud service providers from the [Official Upbound Provider Families](https://marketplace.upbound.io/).
 
-Advantages of Cluster-as-a-Service:
+## Architecture
 
-- GitOps workflow with Flux or ArgoCD
-- Production-ready template
-- Scalable architecture
-- Product agnostic approach
+This platform uses **Upbound DevEx** with:
+- **Embedded KCL Functions**: Pipeline-mode compositions with embedded KCL functions instead of external patch-and-transform
+- **Test-Driven Development**: Comprehensive composition tests and e2e tests for all APIs
+- **Strong Typing**: KCL models for type-safe resource definitions
+- **Modern Workflow**: `up project build`, `up test run`, and `up composition render` commands
+
+## Overview
+
+This reference platform provides three specialized APIs:
+
+### XCluster - Multi-Cloud Kubernetes Clusters
+
+The [XCluster](apis/definition.yaml) API provisions fully configured Kubernetes clusters across AWS (EKS), Azure (AKS), and GCP (GKE), incorporating XRs from these configurations:
+
+* [upbound-configuration-aws-network](https://github.com/upbound/configuration-aws-network)
+* [upbound-configuration-aws-eks](https://github.com/upbound/configuration-aws-eks)
+* [upbound-configuration-aws-lb-controller](https://github.com/upbound/configuration-aws-lb-controller)
+* [upbound-configuration-azure-network](https://github.com/upbound/configuration-azure-network)
+* [upbound-configuration-azure-aks](https://github.com/upbound/configuration-azure-aks)
+* [upbound-configuration-gcp-network](https://github.com/upbound/configuration-gcp-network)
+* [upbound-configuration-gcp-gke](https://github.com/upbound/configuration-gcp-gke)
+* [upbound-configuration-observability-oss](https://github.com/upbound/configuration-observability-oss)
+* [upbound-configuration-gitops-flux](https://github.com/upbound/configuration-gitops-flux)
+* [upbound-configuration-gitops-argocd](https://github.com/upbound/configuration-gitops-argocd)
+
+### XControlPlane - Upbound Managed Control Planes
+
+The [XControlPlane](apis/upbound/controlplane/definition.yaml) API provisions Upbound Managed Control Planes (MCPs) in Upbound Spaces with:
+- Robot and Team management for RBAC
+- Automatic token generation for mcp-connector
+- Group-level namespace access configuration
+- Connection secret with kubeconfig and token
+
+### XConnector - MCP Connector
+
+The [XConnector](apis/upbound/mcp-connector/definition.yaml) API installs mcp-connector helm chart to connect spoke clusters to Upbound MCPs with:
+- Automatic token reference from XControlPlane
+- Configurable connector version
+- Namespace and cluster identification
+
+### Architecture Overview
+
+```mermaid
+graph LR;
+    subgraph Configuration["Configuration: upbound/configuration-caas"]
+        XRD1["XRD: XCluster"]
+        XRD2["XRD: XControlPlane"]
+        XRD3["XRD: XConnector"]
+        Composition1["XEKS/XAKS/XGKE,<br/>XNetwork,<br/>XAWSLBController,<br/>XFlux/XArgo, XOss"]
+        Composition2["Robot, Team, Token,<br/>ControlPlane,<br/>ObjectRoleBinding"]
+        Composition3["Helm Release:<br/>mcp-connector"]
+
+        XRD1---Composition1
+        XRD2---Composition2
+        XRD3---Composition3
+    end
+    subgraph Providers
+        Cloud.MRs["MRs: EKS/AKS/GKE,<br/>VPC/VNet, IAM"]
+        Upbound.MRs["MRs: Robot, Team,<br/>Token, K8s Objects"]
+        Helm.MRs["MRs: Helm Release"]
+
+        Composition1---Cloud.MRs
+        Composition2---Upbound.MRs
+        Composition3---Helm.MRs
+    end
+
+style Configuration fill:#f5f5dc,opacity:0.3
+style Providers fill:#81CABB,opacity:0.3
+style XRD1 color:#000,fill:#f1d16d,stroke:#000,stroke-width:2px,stroke-dasharray: 5 5
+style XRD2 color:#000,fill:#f1d16d,stroke:#000,stroke-width:2px,stroke-dasharray: 5 5
+style XRD3 color:#000,fill:#f1d16d,stroke:#000,stroke-width:2px,stroke-dasharray: 5 5
+style Composition1 color:#000,fill:#f1d16d,stroke:#000,stroke-width:2px
+style Composition2 color:#000,fill:#f1d16d,stroke:#000,stroke-width:2px
+style Composition3 color:#000,fill:#f1d16d,stroke:#000,stroke-width:2px
+style Cloud.MRs color:#000,fill:#81CABB,stroke:#000,stroke-width:2px
+style Upbound.MRs color:#000,fill:#81CABB,stroke:#000,stroke-width:2px
+style Helm.MRs color:#000,fill:#81CABB,stroke:#000,stroke-width:2px
+```
+
+### API Connection Workflow
+
+```mermaid
+graph TD;
+    subgraph Configuration["Configuration: upbound/configuration-caas"]
+        XRD2["XRD: XControlPlane"]
+        XRD1["XRD: XCluster"]
+        XRD3["XRD: XConnector"]
+    end
+
+    XRD2 -->|"1. Creates MCP + Token<br/>(connection secret)"| Secret["Connection Secret<br/>kubeconfig + token"]
+    XRD1 -->|"2. Creates Cluster<br/>(ProviderConfig)"| PC["ProviderConfig<br/>(helm access)"]
+
+    Secret -->|"tokenSecretRef"| XRD3
+    PC -->|"providerConfigName"| XRD3
+
+    XRD3 -->|"3. Installs mcp-connector<br/>Connects cluster to MCP"| Result["Connected Cluster"]
+
+style Configuration fill:#f5f5dc,opacity:0.3
+style XRD1 color:#000,fill:#fff,stroke:#000,stroke-width:2px,stroke-dasharray: 5 5
+style XRD2 color:#000,fill:#fff,stroke:#000,stroke-width:2px,stroke-dasharray: 5 5
+style XRD3 color:#000,fill:#fff,stroke:#000,stroke-width:2px,stroke-dasharray: 5 5
+style Secret color:#000,fill:#e6e6e6,stroke:#000,stroke-width:1px
+style PC color:#000,fill:#e6e6e6,stroke:#000,stroke-width:1px
+style Result color:#000,fill:#d4edda,stroke:#000,stroke-width:1px
+```
+
+Learn more about Composite Resources in the [Crossplane
+Docs](https://docs.crossplane.io/latest/concepts/compositions/).
+
+## Quickstart
+
+### Installation
+
+Install this configuration from the [Upbound Marketplace](https://marketplace.upbound.io/configurations/upbound/configuration-caas/):
+
+```console
+up ctp configuration install xpkg.upbound.io/upbound/configuration-caas:latest
+```
+
+### Development Workflow
+
+This platform uses **Upbound DevEx** for modern development:
+
+```console
+# Build the project and compile KCL functions
+up project build
+
+# Run composition tests
+up test run tests/*
+
+# Render compositions with examples
+up composition render apis/definition.yaml apis/composition.yaml examples/cluster-aws-flux.yaml
+```
+
+## Using the Platform
+
+Once installed, you can create platform resources using the provided examples:
+
+### Creating a Kubernetes Cluster
+
+```console
+# Create an AWS EKS cluster with Flux GitOps
+kubectl apply -f examples/cluster-aws-flux.yaml
+
+# Create an Azure AKS cluster with ArgoCD
+kubectl apply -f examples/cluster-azure-argocd.yaml
+
+# Create a GCP GKE cluster with Flux
+kubectl apply -f examples/cluster-gcp-flux.yaml
+```
+
+### Creating an Upbound Managed Control Plane
+
+```console
+# Create an MCP in Upbound Spaces
+kubectl apply -f examples/upbound-controlplane.yaml
+
+# This creates:
+# - Control Plane in the specified Upbound Space group
+# - Robot for programmatic access
+# - Team for RBAC
+# - Robot Token for mcp-connector
+# - Connection secret with kubeconfig and token
+```
+
+### Connecting a Cluster to an MCP
+
+```console
+# Install mcp-connector to connect a cluster to the MCP
+kubectl apply -f examples/upbound-mcp-connector.yaml
+
+# The connector uses the token from the XControlPlane's connection secret
+```
+
+Monitor deployment status:
+
+```console
+kubectl get claim,composite,managed
+```
+
+You can also use the Crossplane CLI for detailed status:
+
+```console
+crossplane beta trace cluster.caas.upbound.io/my-cluster
+crossplane beta trace xcontrolplanes.mcp.caas.upbound.io/my-mcp
+```
+
+## Development
+
+### Testing
+
+```console
+# Run all composition tests
+up test run tests/*
+
+# Run specific composition test
+up test run tests/test-xcluster-aws-flux
+
+# Run end-to-end tests (requires cloud credentials)
+up test run tests/e2etest-xcluster-aws --e2e
+up test run tests/e2etest-xcontrolplane --e2e
+up test run tests/e2etest-xconnector --e2e
+```
+
+### Building and Publishing
+
+```console
+# Build the project
+up project build
+
+# Deploy locally to a control plane
+up project run
+```
+
+For publishing to the marketplace, see the [Upbound documentation](https://docs.upbound.io/devex/).
+
+## Platform Features
+
+This reference platform includes several key features:
+
+### Multi-Cloud Support
+- Single API for provisioning clusters across AWS (EKS), Azure (AKS), and GCP (GKE)
+- Cloud-specific optimizations (AWS Load Balancer Controller, IAM roles, etc.)
+- Consistent networking setup across providers
+
+### GitOps Integration
+- Choice of Flux or ArgoCD as GitOps operator
+- Automatic operator installation and configuration
+- Git repository synchronization for application deployments
+
+### Observability
+- Prometheus stack automatically deployed
+- Metrics collection and monitoring configured
+- Integration with cloud-native observability tools
+
+### Intelligent Resource Ordering
+- Network resources created first
+- Clusters provisioned after networking
+- GitOps and observability deployed after cluster readiness
+- Conditional resource creation to avoid race conditions
+
+### Upbound Managed Control Planes
+- Automated MCP provisioning in Upbound Spaces
+- Robot and Team management for secure access
+- Token generation for mcp-connector
+- Group-level namespace access control
+- Team resources use Orphan deletion policy to preserve teams
+
+### MCP Connector
+- Helm-based connector installation
+- Token reference from XControlPlane connection secrets
+- Configurable connector version
+- Automatic cluster registration with MCP
+
+### Enhanced Resilience
+- Extended timeouts for GitOps deployments
+- Conditional resource creation based on readiness status
+- Proper usage dependencies for deletion ordering
+- Connection secret propagation for secure credentials
 
 ## Available APIs
 
-This repository implements Compositions for AWS, Azure, and GCP provider APIs, as well as the Upbound Control Plane provider. For more information, review the API documentation below:
+### Cluster API
 
-- [`Cluster.caas.upbound.io`](https://marketplace.upbound.io/configurations/upbound/configuration-caas/latest/resources/caas.upbound.io/XCluster/v1alpha1) 
-    - Provision/Manage an EKS,AKS or GKE Cluster
+- [`Cluster.caas.upbound.io`](apis/definition.yaml) - Provision/Manage EKS, AKS, or GKE clusters
 
-- [`ControlPlane.mcp.caas.upbound.io`](https://marketplace.upbound.io/configurations/upbound/configuration-caas/latest/resources/mcp.caas.upbound.io/XControlPlane/v1alpha1)  
-    - Provision/Manage an Upbound Control Plane
+**Parameters:**
+- `cloud`: Cloud provider (aws, azure, gcp)
+- `region`: Deployment region
+- `version`: Kubernetes version
+- `nodes`: Node pool configuration (count, instanceType)
+- `gitops`: GitOps configuration (operator, git repository)
+- `operators`: Operator versions (flux, argocd, prometheus)
 
-- [`Connector.mcp.caas.upbound.io`](https://marketplace.upbound.io/configurations/upbound/configuration-caas/latest/resources/mcp.caas.upbound.io/XConnector/v1alpha1)
-    - Provision/Manage an MCP Connector
+### ControlPlane API
 
-The [`apis`](https://github.com/upbound/configuration-caas/tree/main/apis)
-folder has the CompositeResourceDefinitons (XRDs) that define the schemas for
-the cloud provider APIs. 
+- [`ControlPlane.mcp.caas.upbound.io`](apis/upbound/controlplane/definition.yaml) - Provision/Manage Upbound MCPs
 
-Once you clone the repository, you can modify the included compositions to fit your organizations needs. 
-    
-## Deployment
+**Parameters:**
+- `organizationName`: Upbound organization name
+- `spaceHost`: Upbound Space host URL
+- `groupName`: Group (namespace) where the control plane will be created
+- `configuration`: Configuration name
+- `robotPermission`: Robot permission level (owner, admin, etc.)
 
-To deploy in a new organization, follow the [Get Started guide](https://docs.upbound.io/quickstart/).
+**Writes Connection Secret with:**
+- `kubeconfig`: MCP kubeconfig for API access
+- `token`: Robot token for mcp-connector
 
-For deployments to an existing organization, log in to your Upbound organization
-and go to **Configurations** and click **Create Configuration**.
+### Connector API
 
-Connect your Upbound organization to GitHub. Select the Github organization and
-repository name for your cloned repo and choose the **Cluster as a
-Service** configuration.
+- [`Connector.mcp.caas.upbound.io`](apis/upbound/mcp-connector/definition.yaml) - Provision/Manage MCP Connectors
 
-When your new configuration is ready, create a new control plane based on the
-cloned repo you just created.
+**Parameters:**
+- `organizationName`: Upbound organization name
+- `controlPlaneName`: MCP name to connect to
+- `version`: mcp-connector version
+- `providerConfigName`: Provider-helm ProviderConfig name (cluster's provider config)
+- `tokenSecretRef`: Reference to XControlPlane's connection secret
 
-After a few minutes, your new control plane is ready!
+## Migration to DevEx
 
-To authenticate and configure your providers, see the [provider authentication
-guide](https://docs.upbound.io/providers/).
+This configuration has been migrated to **Upbound DevEx v2alpha1** with embedded KCL functions:
 
-Once authenticated and configured, your self-service Upbound console lists
-available cloud resources.
+### Completed Migrations
+✅ **XControlPlane** - Fully migrated with embedded KCL function
+- Robot, Team, and Token management
+- ControlPlane creation in Upbound Spaces
+- Group-level ProviderConfig setup
+- Connection secret with kubeconfig and token
 
-## GitOps integration
+✅ **XConnector** - Fully migrated with embedded KCL function
+- Helm Release for mcp-connector
+- Token reference from XControlPlane
+- Configurable version and namespace
+
+✅ **XCluster** - Fully migrated with embedded KCL function
+- Multi-cloud cluster provisioning (AWS/Azure/GCP)
+- Network, cluster, and add-on composition
+- GitOps and observability integration
+
+### Testing Coverage
+- **Composition Tests**: All APIs have composition tests (`tests/test-*`)
+- **E2E Tests**: Full end-to-end deployment tests for AWS, Azure, GCP clusters and MCP provisioning (`tests/e2etest-*`)
+
+### Benefits of DevEx Migration
+- Reduced complexity: Single embedded function per API vs multiple pipeline steps
+- Better type safety: KCL type checking and validation
+- Improved testability: Fast composition tests without external function dependencies
+- Easier debugging: All logic in one place with clear data flow
+- Better performance: No external function communication overhead
+
+## GitOps Integration
 
 Cluster-as-a-Service deployments work best when managed in your infrastructure as code
-lifecycle. 
+lifecycle.
 
 For more information on how to integrate Argo CD and Flux in your Upbound
 environment, check out the [GitOps with Control Planes doc](https://docs.upbound.io/mcp/gitops/).
+
+## Next Steps
+
+- Explore the [examples](examples/) directory for usage patterns
+- Check out the [Upbound DevEx documentation](https://docs.upbound.io/devex/) for advanced features
+- Review the [KCL functions](functions/) for customization
+- Join the [Crossplane Slack](https://slack.crossplane.io) community
 
 ## Contributing
 

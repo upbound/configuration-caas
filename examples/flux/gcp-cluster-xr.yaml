@@ -1,0 +1,31 @@
+apiVersion: caas.upbound.io/v1alpha1
+kind: XCluster
+metadata:
+  name: caas-gcp-flux
+spec:
+  parameters:
+    cloud: gcp
+    id: caas-gcp-flux
+    region: us-central1
+    version: "1.31"
+    deletionPolicy: Delete
+    providerConfigName: default
+    nodes:
+      count: 3
+      instanceType: n1-standard-1
+    gitops:
+      operator: flux
+      git:
+        url: https://github.com/upbound/configuration-caas/
+        ref:
+          name: refs/heads/main
+    operators:
+      prometheus:
+        version: "67.4.0"
+      flux:
+        version: "2.16.4"
+      fluxSync:
+        version: "1.13.4"
+  writeConnectionSecretToRef:
+    name: caas-gcp-flux-kubeconfig
+    namespace: upbound-system

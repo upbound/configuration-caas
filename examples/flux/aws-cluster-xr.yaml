@@ -1,0 +1,33 @@
+apiVersion: caas.upbound.io/v1alpha1
+kind: XCluster
+metadata:
+  name: caas-aws-flux
+spec:
+  parameters:
+    cloud: aws
+    id: caas-aws-flux
+    region: us-west-2
+    version: "1.31"
+    deletionPolicy: Delete
+    providerConfigName: default
+    iam:
+      roleArn: arn:aws:iam::123456789:role/AWSReservedSSO_AdministratorAccess_test
+    nodes:
+      count: 3
+      instanceType: t3.small
+    gitops:
+      operator: flux
+      git:
+        url: https://github.com/upbound/configuration-caas/
+        ref:
+          name: refs/heads/main
+    operators:
+      prometheus:
+        version: "67.4.0"
+      flux:
+        version: "2.16.4"
+      fluxSync:
+        version: "1.13.4"
+  writeConnectionSecretToRef:
+    name: caas-aws-flux-kubeconfig
+    namespace: upbound-system

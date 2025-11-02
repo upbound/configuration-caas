@@ -9,80 +9,9 @@ spec:
     kind: XConnector
   mode: Pipeline
   pipeline:
-    - step: patch-and-transform
-      functionRef:
-        name: function-patch-and-transform
-      input:
-        apiVersion: pt.fn.crossplane.io/v1beta1
-        kind: Resources
-        resources:
-          - name: mcp-connector
-            base:
-              apiVersion: helm.crossplane.io/v1beta1
-              kind: Release
-              spec:
-                forProvider:
-                  chart:
-                    name: mcp-connector
-                    url: https://charts.upbound.io/beta/mcp-connector-0.3.5.tgz
-                    version: 0.3.5
-                  namespace: kube-system
-                  set:
-                    - name: mcp.token
-                      valueFrom:
-                        secretKeyRef:
-                          key: token
-                          namespace: upbound-system
-                          optional: false
-                  values:
-                    mcp:
-                      host: https://proxy.upbound.io
-            patches:
-              - fromFieldPath: metadata.labels
-                toFieldPath: metadata.labels
-                type: FromCompositeFieldPath
-              - fromFieldPath: metadata.annotations
-                toFieldPath: metadata.annotations
-                type: FromCompositeFieldPath
-              - fromFieldPath: spec.parameters.providerConfigName
-                toFieldPath: spec.providerConfigRef.name
-                type: FromCompositeFieldPath
-              - fromFieldPath: spec.parameters.deletionPolicy
-                toFieldPath: spec.deletionPolicy
-                type: FromCompositeFieldPath
-              - fromFieldPath: spec.parameters.organizationName
-                toFieldPath: spec.forProvider.values.mcp.account
-                type: FromCompositeFieldPath
-              - fromFieldPath: spec.parameters.controlPlaneName
-                toFieldPath: spec.forProvider.set[0].valueFrom.secretKeyRef.name
-                transforms:
-                  - type: string
-                    string:
-                      fmt: '%s-connection-details'
-                      type: Format
-                type: FromCompositeFieldPath
-              - fromFieldPath: spec.parameters.controlPlaneName
-                toFieldPath: spec.forProvider.values.mcp.name
-                type: FromCompositeFieldPath
-              - fromFieldPath: metadata.labels[crossplane.io/claim-name]
-                toFieldPath: spec.forProvider.values.mcp.namespace
-                type: FromCompositeFieldPath
-              - fromFieldPath: spec.parameters.version
-                toFieldPath: spec.forProvider.chart.version
-                type: FromCompositeFieldPath
-              - combine:
-                  strategy: string
-                  string:
-                    fmt: https://charts.upbound.io/beta/mcp-connector-%s.tgz
-                  variables:
-                    - fromFieldPath: spec.parameters.version
-                toFieldPath: spec.forProvider.chart.url
-                type: CombineFromComposite
-              - fromFieldPath: spec.parameters.version
-                toFieldPath: spec.forProvider.values.image.tag
-                transforms:
-                  - type: string
-                    string:
-                      fmt: v%s
-                      type: Format
-                type: FromCompositeFieldPath
+  - step: xconnector
+    functionRef:
+      name: upbound-configuration-caasxconnector
+  - step: crossplane-contrib-function-auto-ready
+    functionRef:
+      name: crossplane-contrib-function-auto-ready
